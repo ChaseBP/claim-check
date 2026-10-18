@@ -8,7 +8,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f766e'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&family=Hind:wght@400;500;600&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=block" />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
@@ -16,15 +16,19 @@
     <header class="top">
       <div class="wrap top-inner">
         <a class="brand" href="#lookup" aria-label="Claim Check home">
-          <span class="logo icon" aria-hidden="true">health_and_safety</span>
-          <span><strong>Claim Check</strong><small>Insurer hospital exclusions, kept on Arkiv</small></span>
+          <span class="logo icon" aria-hidden="true">verified_user</span>
+          <span><strong>Claim Check</strong><small data-i18n="brand.sub">Insurer hospital exclusions, kept on Arkiv</small></span>
         </a>
         <nav class="tabs" aria-label="Sections">
-          <a class="state" href="#lookup" data-tab="lookup"><span class="icon" aria-hidden="true">search</span>Lookup</a>
-          <a class="state" href="#changes" data-tab="changes"><span class="icon" aria-hidden="true">difference</span>What changed</a>
-          <a class="state" href="#sources" data-tab="sources"><span class="icon" aria-hidden="true">verified</span>Sources &amp; verify</a>
-          <a class="state" href="#why" data-tab="why"><span class="icon" aria-hidden="true">info</span>Why Arkiv</a>
+          <a class="state" href="#lookup" data-tab="lookup"><span class="icon" aria-hidden="true">search</span><span data-i18n="tab.lookup">Lookup</span></a>
+          <a class="state" href="#changes" data-tab="changes"><span class="icon" aria-hidden="true">difference</span><span data-i18n="tab.changes">What changed</span></a>
+          <a class="state" href="#sources" data-tab="sources"><span class="icon" aria-hidden="true">verified</span><span data-i18n="tab.sources">Sources &amp; verify</span></a>
+          <a class="state" href="#why" data-tab="why"><span class="icon" aria-hidden="true">info</span><span data-i18n="tab.why">Why Arkiv</span></a>
         </nav>
+        <div class="lang" role="group" aria-label="Language">
+          <button type="button" class="state" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" class="state" data-lang="hi" aria-pressed="false" lang="hi">हिन्दी</button>
+        </div>
       </div>
     </header>
 
@@ -32,41 +36,46 @@
 
     <main class="wrap">
       <section id="tab-lookup" class="tab">
-        <h1>Will my insurer pay at this hospital?</h1>
-        <p class="lede">Insurers publish lists of hospitals where they will not pay claims, cashless or reimbursement, except to stabilise an emergency. They replace the PDF without saying what changed. Search every version we hold.</p>
+        <p class="eyebrow" data-i18n="lookup.eyebrow">01 · Hospital lookup</p>
+        <h1 data-i18n="lookup.h1">Will my insurer pay at this hospital?</h1>
+        <p class="lede" data-i18n="lookup.lede">Insurers publish lists of hospitals where they will not pay claims, cashless or reimbursement, except to stabilise an emergency. They replace the PDF without saying what changed. Search every version we hold, across insurers.</p>
         <form id="search-form" class="search" role="search">
           <span class="icon" aria-hidden="true">local_hospital</span>
-          <label for="q" class="sr-only">Hospital name or PIN code</label>
-          <input id="q" name="q" autocomplete="off" placeholder="Hospital name or PIN, e.g. “Gaurav Hospital” or 131021" />
-          <button class="state" type="submit"><span class="icon" aria-hidden="true">search</span>Check</button>
+          <label for="q" class="sr-only" data-i18n="lookup.label">Hospital name or PIN code</label>
+          <input id="q" name="q" autocomplete="off" placeholder="Hospital name or PIN, e.g. “Gaurav Hospital” or 131021" data-i18n-placeholder="lookup.placeholder" />
+          <button class="state" type="submit"><span class="icon" aria-hidden="true">search</span><span data-i18n="lookup.button">Check</span></button>
         </form>
-        <p class="hint">Try <a class="state" href="#lookup/131021">131021</a><a class="state" href="#lookup/gaurav%20hospital">Gaurav Hospital</a><a class="state" href="#lookup/repose">Repose</a><a class="state" href="#lookup/1220">PINs starting 1220</a></p>
+        <p class="hint"><span data-i18n="lookup.try">Try</span> <a class="state" href="#lookup/131021">131021</a><a class="state" href="#lookup/gaurav%20hospital">Gaurav Hospital</a><a class="state" href="#lookup/repose">Repose</a><a class="state" href="#lookup/1220" data-i18n="lookup.pinPrefix">PINs starting 1220</a></p>
+        <div id="facts" class="facts" aria-label="What is on Arkiv"></div>
         <div id="results" aria-live="polite"></div>
       </section>
 
       <section id="tab-changes" class="tab" hidden>
-        <h1>What changed between list versions</h1>
-        <p class="lede">Each version is compared with the one before it. Hospitals that appear are <b>listed</b>; hospitals that disappear are <b>delisted</b>.</p>
+        <p class="eyebrow" data-i18n="changes.eyebrow">02 · Version history</p>
+        <h1 data-i18n="changes.h1">What changed between list versions</h1>
+        <p class="lede" data-i18n="changes.lede">Each version is compared with the one before it. Hospitals that appear are listed; hospitals that disappear are delisted.</p>
         <div class="row">
-          <label for="version-select">Version</label>
+          <label for="version-select" data-i18n="changes.version">Version</label>
           <select id="version-select"></select>
-          <label for="state-filter">State</label>
+          <label for="state-filter" data-i18n="changes.state">State</label>
           <select id="state-filter"><option value="">All states</option></select>
         </div>
         <div id="changes"></div>
       </section>
 
       <section id="tab-sources" class="tab" hidden>
-        <h1>Sources and verification</h1>
-        <p class="lede">Every list version is a read-only Arkiv entity carrying the SHA-256 of the insurer's PDF. Download the PDF, hash it, and compare. Then replay the change log to check that our extraction adds up.</p>
+        <p class="eyebrow" data-i18n="sources.eyebrow">03 · Provenance</p>
+        <h1 data-i18n="sources.h1">Sources and verification</h1>
+        <p class="lede" data-i18n="sources.lede">Every list version is a read-only Arkiv entity carrying the SHA-256 of the insurer's PDF. Download the PDF, hash it, and compare. Then replay the change log to check that our extraction adds up.</p>
         <div id="sources"></div>
         <div class="verify">
-          <button id="verify-btn" class="state" type="button"><span class="icon" aria-hidden="true">published_with_changes</span>Replay the change log from Arkiv</button>
+          <button id="verify-btn" class="state" type="button"><span class="icon" aria-hidden="true">published_with_changes</span><span data-i18n="sources.verify">Replay the change log from Arkiv</span></button>
           <div id="verify-out" aria-live="polite"></div>
         </div>
       </section>
 
       <section id="tab-why" class="tab prose" hidden>
+        <p class="eyebrow">04 · Why Arkiv</p>
         <h1>Why this lives on Arkiv</h1>
         <p>An exclusion list decides whether a family's hospital bill is paid. Only the insurer controls which version is online, and it replaces the file behind old links: HDFC ERGO's URL labelled <code>12-02-2025</code> now serves a PDF created on 18 March 2026. The 2023 and 2024 lists survive only because the Internet Archive happened to capture them.</p>
         <p>Claim Check keeps every version as public, read-only records on Arkiv, signed by one publishing wallet. If the history sat in our own database, it would be only as good as our promise not to edit it. On Arkiv:</p>
@@ -90,7 +99,7 @@
 
     <footer class="wrap foot">
       <span><span id="live" class="live" data-state="idle">Live off</span> <span id="block-info">Reading Arkiv…</span></span>
-      <span>Data: insurers' published exclusion lists. Not insurance advice. <a href="https://github.com/ChaseBP/claim-check">Source (MIT)</a></span>
+      <span><span data-i18n="foot.disclaimer">Data: insurers' published exclusion lists. Not insurance advice.</span> <a href="https://github.com/ChaseBP/claim-check">Source (MIT)</a></span>
     </footer>
     <script type="module" src="/src/main.js"></script>
   </body>

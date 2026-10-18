@@ -1,0 +1,7 @@
+/* Colour roles. Placeholder neutral scheme; replaced by the wallpaper-derived scheme. */
+:root {
+  --bg: #f7f6f2; --surface: #ffffff; --surface-alt: #f1efe9; --ink: #1b1b1f; --ink-muted: #5a5a63;
+  --line: #e2dfd7; --primary: #2b3a67; --on-primary: #ffffff; --accent: #c8553d; --link: #2b3a67;
+  --danger: #b3261e; --success: #1d6b46; --warning: #8a5a00;
+  color-scheme: light;
+}
