@@ -1,43 +1,48 @@
-/* Colour roles derived from the wallpaper "ink-02-hanfu-portrait-light": rice-paper
-   ground, sumi-ink text and navy, vermilion seal accent. Every pairing used for text
-   was re-checked against WCAG 2.1 (light: ink/bg 16.4, muted/bg 7.6, danger/bg 5.9,
-   success/bg 5.8, warning/bg 5.7; dark: all >= 5.3). */
+/* Colour roles: deep ink navy and jade on a cool off-white; navy-black in dark.
+   Red is reserved for the "Excluded" status and never used as a brand colour.
+   Every text pairing was checked against WCAG 2.1 AA (light: ink/bg 15.2,
+   muted/bg 7.0, link/bg 6.9, danger 6.6, success 6.5, warning 6.3; dark: all >= 6.9). */
 :root {
-  --bg: #f7f4ec;
+  --bg: #f5f6f2;
   --surface: #ffffff;
-  --surface-alt: #ebe6da;
-  --ink: #181614;
-  --ink-muted: #524d45;
-  --line: #d5cebe;
-  --primary: #243a48;
+  --surface-alt: #eceee8;
+  --ink: #15202b;
+  --ink-muted: #4a5560;
+  --line: #d6dad3;
+  --primary: #1b2b3a;
   --on-primary: #ffffff;
-  --accent: #ab3830;
-  --link: #243a48;
-  --danger: #b32626;
-  --success: #1b6d3d;
-  --warning: #875500;
+  --accent: #0f6b62;
+  --accent-soft: #9ed9c9;
+  --link: #0d5f57;
+  --danger: #b42318;
+  --success: #1d6b3a;
+  --warning: #8a5300;
+  --logo-1: #15202b; --logo-2: #0f8a7c; --logo-3: #5cc4b0; --logo-4: #cfeee6; --logo-ink: #15202b; --logo-gap: var(--bg);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141311;
-    --surface: #1d1b18;
-    --surface-alt: #272421;
-    --ink: #f2eee6;
-    --ink-muted: #b0a799;
-    --line: #3b3630;
-    --primary: #5c92b0;
-    --on-primary: #0a171f;
-    --accent: #e0584e;
-    --link: #7fb0cc;
-    --danger: #ff7575;
-    --success: #50d688;
-    --warning: #f5b542;
+    --bg: #0c1318;
+    --surface: #121b21;
+    --surface-alt: #19242b;
+    --ink: #e8eef0;
+    --ink-muted: #9fb0b8;
+    --line: #27343c;
+    --primary: #cfe3e0;
+    --on-primary: #0c1318;
+    --accent: #4fd1bd;
+    --accent-soft: #1e4a44;
+    --link: #6fd6c4;
+    --danger: #ff8a80;
+    --success: #6ad49a;
+    --warning: #f2c25b;
+    --logo-1: #dcefe9; --logo-2: #14a08f; --logo-3: #6fd0bd; --logo-4: #d6f3ec; --logo-ink: #0e2230; --logo-gap: var(--bg);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #141311; --surface: #1d1b18; --surface-alt: #272421; --ink: #f2eee6; --ink-muted: #b0a799;
-  --line: #3b3630; --primary: #5c92b0; --on-primary: #0a171f; --accent: #e0584e; --link: #7fb0cc;
-  --danger: #ff7575; --success: #50d688; --warning: #f5b542; color-scheme: dark;
+  --bg: #0c1318; --surface: #121b21; --surface-alt: #19242b; --ink: #e8eef0; --ink-muted: #9fb0b8;
+  --line: #27343c; --primary: #cfe3e0; --on-primary: #0c1318; --accent: #4fd1bd; --accent-soft: #1e4a44;
+  --link: #6fd6c4; --danger: #ff8a80; --success: #6ad49a; --warning: #f2c25b;
+  --logo-1: #dcefe9; --logo-2: #14a08f; --logo-3: #6fd0bd; --logo-4: #d6f3ec; --logo-ink: #0e2230; --logo-gap: var(--bg); color-scheme: dark;
 }
