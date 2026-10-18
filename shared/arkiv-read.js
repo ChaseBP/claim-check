@@ -178,8 +178,9 @@ export async function search(text, { limitHospitals = 60 } = {}) {
   return { hospitals: groupTimelines(events), term, block, truncated, matched: keys.length }
 }
 
-export async function hospital(key) {
-  return groupTimelines(await eventsForHospitals([key]))[0] ?? null
+/** Every insurer's timeline for one hospital key. */
+export async function hospitalTimelines(key) {
+  return groupTimelines(await eventsForHospitals([key]))
 }
 
 /** Group events into one timeline per (insurer, hospital), ordered by list version. */

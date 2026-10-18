@@ -3,9 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Claim Check</title>
-    <meta name="description" content="Check whether your health insurer has excluded a hospital, and since when. Every list version is kept on Arkiv." />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f766e'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <title>Claim Check · Hospital exclusions, on the record</title>
+    <meta name="description" content="Check whether your health insurer has excluded a hospital, and since when. Every version of every insurer's exclusion list, kept as read-only records on Arkiv." />
+    <meta property="og:title" content="Claim Check" />
+    <meta property="og:description" content="Will your insurer pay at this hospital? Every version of the exclusion lists, on the record." />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <meta name="theme-color" content="#0e2230" />
     <script>
       // Apply a saved theme before first paint, so the page never flashes the other one.
       try { const t = localStorage.getItem("claim-check-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t } catch {}
@@ -13,100 +17,73 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Hind:wght@400;500;600&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=block" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
+    <a class="skip" href="#app">Skip to content</a>
     <header class="top">
       <div class="wrap top-inner">
-        <a class="brand" href="#lookup" aria-label="Claim Check home">
-          <span class="logo icon" aria-hidden="true">verified_user</span>
-          <span><strong>Claim Check</strong><small data-i18n="brand.sub">Insurer hospital exclusions, kept on Arkiv</small></span>
+        <a class="brand" href="#/" aria-label="Claim Check home">
+          <span class="logo" aria-hidden="true" id="logo-slot"></span>
+          <span class="brand-name">Claim Check</span>
         </a>
-        <nav class="tabs" aria-label="Sections">
-          <a class="state" href="#lookup" data-tab="lookup"><span class="icon" aria-hidden="true">search</span><span data-i18n="tab.lookup">Lookup</span></a>
-          <a class="state" href="#changes" data-tab="changes"><span class="icon" aria-hidden="true">difference</span><span data-i18n="tab.changes">What changed</span></a>
-          <a class="state" href="#sources" data-tab="sources"><span class="icon" aria-hidden="true">verified</span><span data-i18n="tab.sources">Sources &amp; verify</span></a>
-          <a class="state" href="#why" data-tab="why"><span class="icon" aria-hidden="true">info</span><span data-i18n="tab.why">Why Arkiv</span></a>
+        <nav class="nav" aria-label="Main">
+          <a href="#/lookup" data-nav="lookup" data-i18n="nav.lookup">Lookup</a>
+          <a href="#/insurers" data-nav="insurers" data-i18n="nav.insurers">Insurers</a>
+          <a href="#/changes" data-nav="changes" data-i18n="nav.changes">Changes</a>
+          <a href="#/verify" data-nav="verify" data-i18n="nav.verify">Verify</a>
+          <a href="#/developers" data-nav="developers" data-i18n="nav.developers">Developers</a>
+          <a href="#/about" data-nav="about" data-i18n="nav.about">About</a>
         </nav>
         <div class="controls">
-        <button type="button" id="theme-btn" class="theme-btn" aria-label="Theme: follows system" title="Theme: follows system"><span class="icon" aria-hidden="true">contrast</span></button>
-        <div class="lang" role="group" aria-label="Language">
-          <button type="button" class="state" data-lang="en" aria-pressed="true">EN</button>
-          <button type="button" class="state" data-lang="hi" aria-pressed="false" lang="hi">हिन्दी</button>
-        </div>
+          <span class="net" title="Arkiv Tiramisu testnet"><i></i>Tiramisu</span>
+          <div class="lang" role="group" aria-label="Language">
+            <button type="button" data-lang="en" aria-pressed="true">EN</button>
+            <button type="button" data-lang="hi" aria-pressed="false" lang="hi">हिं</button>
+          </div>
+          <button type="button" id="theme-btn" class="icon-btn" aria-label="Theme: follows system" title="Theme: follows system"><span class="icon" aria-hidden="true">contrast</span></button>
+          <button type="button" id="menu-btn" class="icon-btn menu-btn" aria-label="Menu" aria-expanded="false"><span class="icon" aria-hidden="true">menu</span></button>
         </div>
       </div>
+      <div class="progress" aria-hidden="true"><i id="progress"></i></div>
     </header>
 
-    <div id="banner" class="wrap"></div>
+    <main id="app" tabindex="-1"></main>
 
-    <main class="wrap">
-      <section id="tab-lookup" class="tab">
-        <p class="eyebrow" data-i18n="lookup.eyebrow">01 · Hospital lookup</p>
-        <h1 data-i18n="lookup.h1">Will my insurer pay at this hospital?</h1>
-        <p class="lede" data-i18n="lookup.lede">Insurers publish lists of hospitals where they will not pay claims, cashless or reimbursement, except to stabilise an emergency. They replace the PDF without saying what changed. Search every version we hold, across insurers.</p>
-        <form id="search-form" class="search" role="search">
-          <span class="icon" aria-hidden="true">local_hospital</span>
-          <label for="q" class="sr-only" data-i18n="lookup.label">Hospital name or PIN code</label>
-          <input id="q" name="q" autocomplete="off" placeholder="Hospital name or PIN, e.g. “Gaurav Hospital” or 131021" data-i18n-placeholder="lookup.placeholder" />
-          <button class="state" type="submit"><span class="icon" aria-hidden="true">search</span><span data-i18n="lookup.button">Check</span></button>
-        </form>
-        <p class="hint"><span data-i18n="lookup.try">Try</span> <a class="state" href="#lookup/131021">131021</a><a class="state" href="#lookup/gaurav%20hospital">Gaurav Hospital</a><a class="state" href="#lookup/repose">Repose</a><a class="state" href="#lookup/1220" data-i18n="lookup.pinPrefix">PINs starting 1220</a></p>
-        <div id="facts" class="facts" aria-label="What is on Arkiv"></div>
-        <div id="results" aria-live="polite"></div>
-      </section>
-
-      <section id="tab-changes" class="tab" hidden>
-        <p class="eyebrow" data-i18n="changes.eyebrow">02 · Version history</p>
-        <h1 data-i18n="changes.h1">What changed between list versions</h1>
-        <p class="lede" data-i18n="changes.lede">Each version is compared with the one before it. Hospitals that appear are listed; hospitals that disappear are delisted.</p>
-        <div class="row">
-          <label for="version-select" data-i18n="changes.version">Version</label>
-          <select id="version-select"></select>
-          <label for="state-filter" data-i18n="changes.state">State</label>
-          <select id="state-filter"><option value="">All states</option></select>
+    <footer class="site-foot">
+      <div class="wrap foot-grid">
+        <div class="foot-brand">
+          <a class="brand" href="#/"><span class="logo" aria-hidden="true" data-logo></span><span class="brand-name">Claim Check</span></a>
+          <p data-i18n="foot.tagline">Every version of every insurer's hospital exclusion list, kept as read-only public records on Arkiv.</p>
+          <p class="foot-status"><span id="live" class="live" data-state="idle">Live off</span> <span id="block-info">Reading Arkiv…</span></p>
         </div>
-        <div id="changes"></div>
-      </section>
-
-      <section id="tab-sources" class="tab" hidden>
-        <p class="eyebrow" data-i18n="sources.eyebrow">03 · Provenance</p>
-        <h1 data-i18n="sources.h1">Sources and verification</h1>
-        <p class="lede" data-i18n="sources.lede">Every list version is a read-only Arkiv entity carrying the SHA-256 of the insurer's PDF. Download the PDF, hash it, and compare. Then replay the change log to check that our extraction adds up.</p>
-        <div id="sources"></div>
-        <div class="verify">
-          <button id="verify-btn" class="state" type="button"><span class="icon" aria-hidden="true">published_with_changes</span><span data-i18n="sources.verify">Replay the change log from Arkiv</span></button>
-          <div id="verify-out" aria-live="polite"></div>
+        <div>
+          <h4 data-i18n="foot.product">Product</h4>
+          <a href="#/lookup" data-i18n="nav.lookup">Lookup</a>
+          <a href="#/insurers" data-i18n="nav.insurers">Insurers</a>
+          <a href="#/changes" data-i18n="nav.changes">Changes</a>
+          <a href="#/verify" data-i18n="nav.verify">Verify</a>
         </div>
-      </section>
-
-      <section id="tab-why" class="tab prose" hidden>
-        <p class="eyebrow">04 · Why Arkiv</p>
-        <h1>Why this lives on Arkiv</h1>
-        <p>An exclusion list decides whether a family's hospital bill is paid. Only the insurer controls which version is online, and it replaces the file behind old links: HDFC ERGO's URL labelled <code>12-02-2025</code> now serves a PDF created on 18 March 2026. The 2023 and 2024 lists survive only because the Internet Archive happened to capture them.</p>
-        <p>Claim Check keeps every version as public, read-only records on Arkiv, signed by one publishing wallet. If the history sat in our own database, it would be only as good as our promise not to edit it. On Arkiv:</p>
-        <ul>
-          <li><b>Attributable:</b> readers keep only entities whose on-chain <code>$creator</code> is the publisher wallet. Anyone can write records tagged <code>claim-check</code>; none of them change what you see here.</li>
-          <li><b>Read-only history:</b> a version and its changes cannot be edited after publication. A correction would be a new, visible record.</li>
-          <li><b>Kept alive by anyone:</b> history records allow permissionless extension, so a newsroom or consumer group can keep them queryable without our permission.</li>
-          <li><b>Freshness is a lease:</b> a 14-day <code>check</code> record is renewed only after we re-download the insurer's PDF and find the same hash. If we stop, the lease expires and this site says <em>stale</em> rather than implying nothing changed.</li>
-          <li><b>No dependency on us:</b> this page reads Arkiv directly from your browser. The same queries run from a dependency-free CLI: <code>node cli/claim-check.mjs search 700019</code>.</li>
-        </ul>
-        <h2>What deliberately stays off Arkiv</h2>
-        <ul>
-          <li>The PDFs themselves (only their hashes and URLs are recorded).</li>
-          <li>Street addresses, and hospital names containing a person's name (e.g. “Dr …”): those rows are withheld, and only their count is published.</li>
-          <li>Anything about patients, claims or policies. Nothing you search for is recorded.</li>
-        </ul>
-        <h2>Limits</h2>
-        <p>We republish what insurers published; we do not judge whether an exclusion is justified. A hospital not on a list is not a guarantee of payment. Confirm with your insurer before admission. Records are on the Arkiv Tiramisu testnet and are retained for about two years unless extended.</p>
-      </section>
-    </main>
-
-    <footer class="wrap foot">
-      <span><span id="live" class="live" data-state="idle">Live off</span> <span id="block-info">Reading Arkiv…</span></span>
-      <span><span data-i18n="foot.disclaimer">Data: insurers' published exclusion lists. Not insurance advice.</span> <a href="https://github.com/ChaseBP/claim-check">Source (MIT)</a></span>
+        <div>
+          <h4 data-i18n="foot.build">Build</h4>
+          <a href="#/developers" data-i18n="nav.developers">Developers</a>
+          <a href="https://github.com/ChaseBP/claim-check/blob/main/arkiv/schema.md">Schema</a>
+          <a href="https://github.com/ChaseBP/claim-check/blob/main/arkiv/friction.md">Friction report</a>
+          <a href="https://github.com/ChaseBP/claim-check">GitHub</a>
+        </div>
+        <div>
+          <h4 data-i18n="foot.project">Project</h4>
+          <a href="#/about" data-i18n="nav.about">About</a>
+          <a href="#/about/method" data-i18n="foot.method">Methodology</a>
+          <a href="#/about/limits" data-i18n="foot.limits">Limits</a>
+          <a href="https://arkiv.network" rel="noopener">Arkiv</a>
+        </div>
+      </div>
+      <div class="wrap foot-base">
+        <span data-i18n="foot.disclaimer">Data from insurers' published exclusion lists. Not insurance advice.</span>
+        <span>MIT · Arkiv Tiramisu testnet</span>
+      </div>
     </footer>
     <script type="module" src="/src/main.js"></script>
   </body>

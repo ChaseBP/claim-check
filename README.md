@@ -21,12 +21,16 @@ So the list decides whether a family's planned surgery is paid, and the only not
 
 ## What it does
 
-- **Lookup** by hospital name or PIN (or PIN prefix), across insurers: each match shows, per insurer, whether it is excluded now, since when, and a chip for every list version showing when it was on the list.
-- **What changed:** the hospitals each new version added and dropped, by state.
-- **Sources & verify:** every version's SHA-256, PDF link, Arkiv entity and flags, plus a button that replays the entire change log from Arkiv and checks it against the hospital count each version declares.
-- **Stale is a state, not a guess:** if the publisher stops re-verifying the insurer's live PDF, a 14-day lease on Arkiv expires and the app says *stale*. It never falls back to implying "unchanged" or "not excluded".
-
-Current data on Arkiv: **HDFC ERGO** (four versions: 28 Dec 2023, 18 Mar 2024, 18 Mar 2026, 21 Mar 2026) and **Tata AIG** (nine monthly lists, April–December 2025): 13 versions, 7,268 change-log events, 4,022 distinct hospitals.
+- **Home:** the problem in real numbers, an interactive walk-through of how a list goes from the insurer's PDF to Arkiv (every figure in it is read live), recent additions and removals, coverage per insurer, and an FAQ.
+- **Lookup** by hospital name or PIN (or PIN prefix), across insurers: one card per hospital, a row per insurer showing whether it is excluded now, since when, and a chip for every list version.
+- **Hospital pages** (`#/hospital/<key>`): a shareable record of one hospital across insurers, with the PDF row and Arkiv entity behind every change.
+- **Insurers:** every version per insurer, with hospital counts, change from the previous version, PDF links and Arkiv records.
+- **Changes:** the hospitals each version added and dropped, by state.
+- **Verify:** freshness leases, every version's SHA-256, PDF link, Arkiv entity and flags, and a button that replays the whole change log from Arkiv against each version's declared count.
+- **Developers:** the data contract (entity types, attributes, lifetimes), the exact queries, and CLI and curl recipes.
+- **Stale is a state, not a guess:** if the publisher stops re-verifying an insurer's live PDF, a 14-day lease on Arkiv expires and the app says *stale*. It never falls back to implying "unchanged" or "not excluded".
+- **Any endpoint:** add `?rpc=<url>` to use any Arkiv RPC instead of the default; there is no Claim Check server.
+- English and Hindi, light and dark themes.
 
 ## Why Arkiv
 
