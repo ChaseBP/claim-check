@@ -17,13 +17,13 @@ Readers trust records by their on-chain `$creator`, never by an attribute anyone
 | `app` | `str` | `claim-check` |
 | `v` | `i32` | schema version, `1` |
 | `type` | `str` | `source`, `event` or `check` |
-| `insurer` | `str` | insurer slug, e.g. `hdfc-ergo` |
+| `insurer` | `str` | insurer slug: `hdfc-ergo` or `tata-aig` |
 
 ## `source`: one list version
 
 | Attribute | Type | Meaning |
 |---|---|---|
-| `doc` | `str` | document ID, e.g. `hdfc-ergo-2026-03-21` (named by PDF creation date) |
+| `doc` | `str` | document ID, e.g. `hdfc-ergo-2026-03-21` (HDFC ERGO: PDF creation date) or `tata-aig-2025-12` (Tata AIG: the insurer's month label, because all nine PDFs were generated on one day) |
 | `version` | `i32` | 0-based order of this version among the insurer's versions |
 | `created` | `u64` | PDF creation date, Unix seconds (UTC) |
 | `hospitals` | `i32` | distinct hospitals this version lists (after withholding; see below) |
@@ -46,10 +46,10 @@ Payload (JSON): source URL and original URL, provenance note, PDF bytes/pages, r
 | `pin` | `str` | PIN exactly as printed (5-digit insurer typos kept and flagged in the payload) |
 | `doc` | `str` | the version that produced this event |
 | `version` | `i32` | that version's order |
-| `effective` | `u64` | the insurer's "effective from" date, Unix seconds |
+| `effective` | `u64` | HDFC ERGO: the insurer's "effective from" date. Tata AIG: first day of the monthly list the hospital first appears on (its lists carry no effective date). Unix seconds |
 | `seq` | `i32` | position in the published change log |
 
-Payload (JSON): display name, city, state, PIN, `pin_valid`, effective date, and the source row number and page in the PDF, so any event can be checked against the insurer's document.
+Payload (JSON): display name, city, state, PIN, `pin_valid`, effective date, Rohini hospital ID where the insurer gives one (Tata AIG), and the source row number and page in the PDF, so any event can be checked against the insurer's document.
 
 - **Expiration:** 730 days. **Flags:** `readonly`, `permissionlessExtension`.
 - Written in atomic batches of 25 (`executeBatch`). 50 fails on Tiramisu (see [friction.md](friction.md)).

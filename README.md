@@ -14,18 +14,19 @@ So the list decides whether a family's planned surgery is paid, and the only not
 
 - **is replaced without notice.** The URL HDFC ERGO labels `exclusion-list-12-02-2025.pdf` now serves a file created on **18 March 2026**, with entries effective up to January 2026. Nothing tells a reader the document behind the link changed.
 - **keeps no history.** The December 2023 and March 2024 lists survive only because the Internet Archive happened to capture them.
-- **cannot be searched by PIN or compared across versions.** Between March 2024 and March 2026, **1,815 hospitals left HDFC ERGO's exclusion list and 878 joined it**, and no page anywhere says so.
+- **cannot be searched by PIN, compared across versions, or compared across insurers.** Between March 2024 and March 2026, **1,815 hospitals left HDFC ERGO's exclusion list and 878 joined it**, and no page anywhere says so. Tata AIG posts a new monthly PDF; between April and December 2025 it dropped 23 hospitals and added 2.
+- **differs by insurer.** 1,368 hospitals are on both insurers' current lists, but not all: Rama Hospital in Sonipat (PIN 131021) left HDFC ERGO's list in March 2026 and is still on Tata AIG's, while Gaurav Hospital in Faridabad is the reverse. The right answer depends on your policy.
 
 **Who uses Claim Check:** a policyholder choosing a hospital for a planned admission, a relative checking a hospital a doctor referred them to, and anyone (a journalist, a consumer group, a hospital) who wants to know when a listing began or ended.
 
 ## What it does
 
-- **Lookup** by hospital name or PIN (or PIN prefix): each match shows whether it is excluded now, the effective date, and a chip for every list version showing when it was on the list.
+- **Lookup** by hospital name or PIN (or PIN prefix), across insurers: each match shows, per insurer, whether it is excluded now, since when, and a chip for every list version showing when it was on the list.
 - **What changed:** the hospitals each new version added and dropped, by state.
 - **Sources & verify:** every version's SHA-256, PDF link, Arkiv entity and flags, plus a button that replays the entire change log from Arkiv and checks it against the hospital count each version declares.
 - **Stale is a state, not a guess:** if the publisher stops re-verifying the insurer's live PDF, a 14-day lease on Arkiv expires and the app says *stale*. It never falls back to implying "unchanged" or "not excluded".
 
-Current data: HDFC ERGO General Insurance, four versions (28 Dec 2023, 18 Mar 2024, 18 Mar 2026, 21 Mar 2026), 5,561 change-log events covering 2,659–2,840 hospitals per version.
+Current data on Arkiv: **HDFC ERGO** (four versions: 28 Dec 2023, 18 Mar 2024, 18 Mar 2026, 21 Mar 2026) and **Tata AIG** (nine monthly lists, April–December 2025): 13 versions, 7,268 change-log events, 4,022 distinct hospitals.
 
 ## Why Arkiv
 
@@ -46,11 +47,12 @@ Full schema, lifetimes and the exact queries: [`arkiv/schema.md`](arkiv/schema.m
 Read without the website (Node 18+ or Bun, no install):
 
 ```bash
-node cli/claim-check.mjs search 520002          # one hospital by PIN
+node cli/claim-check.mjs search 131021          # one PIN, both insurers
 node cli/claim-check.mjs search "repose"        # by name prefix
 node cli/claim-check.mjs sources                # versions, hashes, freshness lease
 node cli/claim-check.mjs changes hdfc-ergo 2    # what the 18 Mar 2026 version changed
 node cli/claim-check.mjs verify hdfc-ergo       # replay all events against declared counts
+node cli/claim-check.mjs verify tata-aig
 node cli/claim-check.mjs search 700019 --rpc <any-arkiv-endpoint>
 ```
 
@@ -74,10 +76,10 @@ Run the app locally: `bun install && bun run dev`. Publishing needs a funded key
 
 ## Limits
 
-We republish what insurers published and do not judge whether an exclusion is justified. Not being on a list does not guarantee payment; confirm with the insurer before admission. Matching hospitals across versions uses name and PIN, with a rule for truncated names; a renamed hospital at the same PIN appears as a new entry. One insurer is covered so far. Records live on a testnet and are retained for about two years unless extended.
+We republish what insurers published and do not judge whether an exclusion is justified. Not being on a list does not guarantee payment; confirm with the insurer before admission. Matching hospitals across versions and insurers uses name and PIN, with a rule for truncated names; a renamed hospital at the same PIN appears as a new entry. Tata AIG lists carry no effective date, so for them we show the first monthly list a hospital appears on. Two insurers are covered so far. Records live on a testnet and are retained for about two years unless extended.
 
 ## Built during the challenge
 
 All code and data were created on 18 October 2026 for the Arkiv Global Tour Stop; there is no pre-existing work, and the baseline is this repository's first commit. Libraries: `@arkiv-network/sdk` 0.8.1, viem 2.38.2, Vite 6, pdfplumber 0.11.4. Runtime: Bun 1.2.
 
-Data: HDFC ERGO General Insurance's published exclusion lists and Internet Archive captures of earlier versions. Not insurance advice.
+Data: exclusion lists published by HDFC ERGO General Insurance and Tata AIG General Insurance, plus Internet Archive captures of earlier HDFC ERGO versions. Not insurance advice.

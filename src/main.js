@@ -74,13 +74,13 @@ function versionChips(timeline) {
   }).join("")
 }
 
-function renderTimeline(t) {
+function renderInsurer(t) {
   const s = statusOf(t, state.latest[t.insurer])
   const f = freshness(t.insurer)
   const src = state.sources.find((x) => x.doc_id === s.sinceDoc)
   const pill = s.state === "excluded"
-    ? `<span class="pill bad"><span class="icon" aria-hidden="true">block</span>Excluded by ${esc(insurerName(t.insurer))}</span>`
-    : `<span class="pill ok"><span class="icon" aria-hidden="true">check_circle</span>Removed from ${esc(insurerName(t.insurer))}'s list</span>`
+    ? `<span class="pill bad"><span class="icon" aria-hidden="true">block</span>Excluded</span>`
+    : `<span class="pill ok"><span class="icon" aria-hidden="true">check_circle</span>Removed from list</span>`
   const since = src?.effective_basis === "list-month"
     ? `On every monthly list since ${esc(vlabel(src))}.`
     : `Effective ${esc(fmtDate(s.effective))} (insurer's date). On every version since ${esc(vlabel(src))}.`
@@ -91,12 +91,42 @@ function renderTimeline(t) {
     const doc = state.sources.find((x) => x.doc_id === e.doc)
     return `<li><span class="k ${e.kind}">${e.kind}</span> in ${esc(vlabel(doc))} list${e.sr ? ` · row ${e.sr}, page ${e.page}` : ""} · ${doc ? `<a href="${esc(doc.source_url)}" target="_blank" rel="noopener">PDF</a>` : ""} · ${entityLink(e.entity.key)}</li>`
   }).join("")
-  return `<article class="card">
-    <div class="card-head"><div><h3>${esc(t.name)}</h3><p class="muted">${esc(t.city)}, ${esc(t.state)} · PIN ${esc(t.pin)}${t.pinValid ? "" : " <span class='tag' title='The insurer printed a malformed PIN; shown exactly as printed'>as printed</span>"}</p></div>${pill}</div>
+  return `<section class="ins">
+    <div class="ins-head"><h4>${esc(insurerName(t.insurer))}</h4>${pill}</div>
     <p>${detail}</p>
-    <div class="chips" aria-label="List versions">${versionChips(t)}</div>
+    <div class="chips" aria-label="${esc(insurerName(t.insurer))} list versions">${versionChips(t)}</div>
     <details><summary><span class="icon" aria-hidden="true">expand_more</span>Evidence on Arkiv</summary><ul class="events">${rows}</ul></details>
+  </section>`
+}
+
+function renderAbsent(insurer) {
+  const versions = state.sources.filter((s) => s.insurer === insurer)
+  return `<section class="ins absent">
+    <div class="ins-head"><h4>${esc(insurerName(insurer))}</h4><span class="pill neutral"><span class="icon" aria-hidden="true">remove</span>Not listed</span></div>
+    <p class="muted">Not on any of the ${versions.length} ${esc(insurerName(insurer))} list versions held (${esc(vlabel(versions[0]))} – ${esc(vlabel(versions.at(-1)))}), under this name and PIN.</p>
+  </section>`
+}
+
+/** One card per hospital, with a row for every insurer, so policies can be compared. */
+function renderHospital(group) {
+  const named = [...group.timelines].sort((a, b) => b.name.length - a.name.length)[0]
+  const byInsurer = new Map(group.timelines.map((t) => [t.insurer, t]))
+  const insurers = Object.keys(state.latest)
+  return `<article class="card">
+    <div class="card-head"><div><h3>${esc(named.name)}</h3><p class="muted">${esc(named.city)}, ${esc(named.state)} · PIN ${esc(named.pin)}${named.pinValid ? "" : " <span class='tag' title='The insurer printed a malformed PIN; shown exactly as printed'>as printed</span>"}</p></div></div>
+    <div class="ins-list">${insurers.map((i) => (byInsurer.has(i) ? renderInsurer(byInsurer.get(i)) : renderAbsent(i))).join("")}</div>
   </article>`
+}
+
+function groupByHospital(timelines) {
+  const groups = new Map()
+  for (const t of timelines) {
+    if (!groups.has(t.key)) groups.set(t.key, { key: t.key, timelines: [] })
+    groups.get(t.key).timelines.push(t)
+  }
+  const rank = (g) => Math.min(...g.timelines.map((t) => (statusOf(t, state.latest[t.insurer]).state === "excluded" ? 0 : 1)))
+  return [...groups.values()].sort((a, b) => rank(a) - rank(b) || b.timelines.length - a.timelines.length ||
+    a.timelines[0].name.localeCompare(b.timelines[0].name))
 }
 
 async function runSearch(text) {
@@ -114,9 +144,8 @@ async function runSearch(text) {
         This is not a guarantee of payment: insurers update lists, and rows whose hospital name contains a person's name (e.g. “Dr …”) are withheld. Confirm with your insurer.</div></div>`
       return
     }
-    const order = { excluded: 0, removed: 1 }
-    r.hospitals.sort((a, b) => order[statusOf(a, state.latest[a.insurer]).state] - order[statusOf(b, state.latest[b.insurer]).state] || a.name.localeCompare(b.name))
-    out.innerHTML = `<p class="muted">${r.hospitals.length} hospital${r.hospitals.length === 1 ? "" : "s"}${r.truncated ? ` (of ${r.matched}; narrow your search)` : ""} · read at block ${r.block}</p>` + r.hospitals.map(renderTimeline).join("")
+    const groups = groupByHospital(r.hospitals)
+    out.innerHTML = `<p class="muted">${groups.length} hospital${groups.length === 1 ? "" : "s"}${r.truncated ? ` (search matched more; narrow it)` : ""} · read at block ${r.block}</p>` + groups.map(renderHospital).join("")
   } catch (err) {
     out.innerHTML = unavailable(err, "search")
   }

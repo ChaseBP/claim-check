@@ -212,6 +212,13 @@ button.tonal { background: var(--secondary-container); color: var(--on-secondary
 .pill.bad { background: var(--error-container); color: var(--on-error-container); }
 .pill.ok { background: var(--success-container); color: var(--on-success-container); }
 .tag { background: var(--surface-container-highest); border-radius: var(--rounding-full); padding: 1px 8px; font-size: 0.74rem; }
+.ins-list { display: grid; gap: var(--spacing-small); margin-top: var(--spacing); }
+.ins { background: var(--surface-container); border-radius: var(--rounding); padding: var(--padding) var(--padding-large); }
+.ins.absent { background: transparent; border: 1px dashed var(--outline-variant); }
+.ins-head { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing); flex-wrap: wrap; }
+.ins h4 { margin: 0; font-size: 0.95rem; font-weight: 600; }
+.ins p { margin: 6px 0 2px; font-size: 0.93rem; }
+.pill.neutral { background: var(--surface-container-highest); color: var(--on-surface-variant); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
 .chip {
   font-size: 0.78rem; border-radius: var(--rounding-full); padding: 3px 11px;

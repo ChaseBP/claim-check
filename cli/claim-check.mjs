@@ -8,9 +8,10 @@
 //   node cli/claim-check.mjs changes hdfc-ergo 2   what list version 2 added and removed
 //   node cli/claim-check.mjs verify hdfc-ergo      replay the change log against declared counts
 //   --rpc <url>                                    any Arkiv endpoint (default: Tiramisu)
+//   ARKIV_API_KEY=<key>                            optional access key for heavier use (X-Api-Key)
 
 import {
-  ArkivUnavailable, setRpcUrl, search, loadSources, loadChecks, verifyInsurer, changesIn, statusOf, headBlock, secondsLeft,
+  ArkivUnavailable, setRpcUrl, setApiKey, search, loadSources, loadChecks, verifyInsurer, changesIn, statusOf, headBlock, secondsLeft,
 } from "../shared/arkiv-read.js"
 import { EXPLORER } from "../shared/config.js"
 
@@ -20,6 +21,7 @@ if (rpcAt !== -1) {
   setRpcUrl(args[rpcAt + 1])
   args.splice(rpcAt, 2)
 }
+if (process.env.ARKIV_API_KEY) setApiKey(process.env.ARKIV_API_KEY)
 const [command, ...rest] = args
 
 async function freshness() {

@@ -26,8 +26,13 @@ const scope = () => {
 }
 
 let rpcUrl = RPC_URL
+let apiKey = null
 export function setRpcUrl(url) {
   rpcUrl = url
+}
+/** Optional Arkiv access key, sent as X-Api-Key. Never ship one in the web build. */
+export function setApiKey(key) {
+  apiKey = key || null
 }
 
 let nextId = 1
@@ -38,7 +43,7 @@ async function rpc(method, params, { timeoutMs = 15000 } = {}) {
   try {
     response = await fetch(rpcUrl, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: apiKey ? { "content-type": "application/json", "x-api-key": apiKey } : { "content-type": "application/json" },
       body: JSON.stringify({ jsonrpc: "2.0", id: nextId++, method, params }),
       signal: controller.signal,
     })

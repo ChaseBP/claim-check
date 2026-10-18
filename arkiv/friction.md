@@ -65,3 +65,23 @@ Items marked **Issue** cost us time or would mislead a user; items marked **Work
 ## 9. Worked: the SDK runs unchanged on Bun
 
 - Every script in this repository (publisher, probes, freshness check, reproductions) runs with `bun <file>.ts`; the SDK's `bun` export condition loads its TypeScript sources directly.
+
+## 10. Worked: an owner can delete a read-only entity, atomically with its replacement
+
+- **What we did:** our first run published one `source` entity with `version = -1`, a bug in our script. Read-only meant we could not patch it.
+- **Actual:** `executeBatch({ deletes: [old], creates: [fixed] })` removed it and created the corrected entity in one transaction (`0xd6eea364…7ce64`). This matches the documentation ("readonly" freezes content, not existence), and it is why our README never claims records are undeletable.
+- **Steps:** [`scripts/repair-source-version.ts`](../scripts/repair-source-version.ts); both keys are recorded in [`evidence/published.json`](evidence/published.json) under `replaces`.
+
+## 11. Issue (small): `getEntity()` and raw `arkiv_query` shape attributes differently
+
+- **Expected:** one attribute shape across the SDK and the JSON-RPC.
+- **Actual:** raw `arkiv_query` returns `attributes` as an array of `{ name, type, value }` with numbers hex-encoded; `publicClient.getEntity()` returns a keyed object (`attributes.version = { type: "i32", value: -1 }`). Our repair script assumed an array and crashed with `entity.attributes.find is not a function` before sending anything.
+- **What would fix it:** one sentence in the SDK docs showing the `getEntity` return shape next to the raw RPC shape.
+
+## 12. Issue: `arkiv_query` has its own keyless budget, undocumented, with a 25-minute lockout
+
+- **Expected:** a documented keyless budget for queries, and rate-limit headers on query responses so a client can slow down before it is cut off.
+- **Actual:** after about an hour of development from one IP (~300 write transactions, four full replays of ~37 query pages each, repeated UI test loads), `arkiv_query` returned **HTTP 429 with `retry-after: 1492`**. In the same minute, `eth_blockNumber` from the same IP returned 200 with `ratelimit: limit=600, remaining=599, reset=60`. So queries are metered separately from ordinary RPC, the query budget is not in the docs we read, and its responses carried no warning headers.
+- **Steps:** run `bun cli/claim-check.mjs verify hdfc-ergo` repeatedly from one IP; then compare `curl -D -` on `eth_blockNumber` and on any `arkiv_query`. Saved result: case `query-budget-vs-rpc-limit` in [`evidence/friction-repro.jsonl`](evidence/friction-repro.jsonl).
+- **What we did:** the reader turns a 429 into an explicit "Couldn't read Arkiv: rate limit reached, no result shown" state rather than an empty answer, and never retries in a loop. The CLI accepts an access key (`ARKIV_API_KEY`, sent as `X-Api-Key`) for heavier use.
+- **What would fix it:** publish the keyless query budget (units, window, per-method cost), and send `ratelimit` headers on `arkiv_query` responses as on other methods.
