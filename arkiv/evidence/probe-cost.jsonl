@@ -1,0 +1,7 @@
+{"at":"2026-10-18T05:16:34.842Z","batch":1,"created":1,"txHash":"0x2552e50c7213d4b6585984b4716b26798584d78093cd5e8eae3c7ecf26914db4","block":725414,"gasUsed":137944,"gasPerEntity":137944,"costGLM":"0.000137944000275888","costPerEntityGLM":"0.000137944000275888","ms":3369,"status":"success"}
+{"at":"2026-10-18T05:16:42.531Z","batch":25,"created":25,"txHash":"0xb26f31ff732eff1b53ccbf720d939031cbc9cd81d6d27ddcf9de1096d15e9a6e","block":725416,"gasUsed":3448600,"gasPerEntity":137944,"costGLM":"0.0034486000068972","costPerEntityGLM":"0.000137944000275888","ms":7688,"status":"success"}
+{"at":"2026-10-18T05:16:46.481Z","batch":100,"error":"Transaction failed: Execution error without revert data","ms":3950}
+{"at":"2026-10-18T05:17:05.658Z","batch":50,"error":"Transaction failed: Execution error without revert data","ms":4695}
+{"at":"2026-10-18T05:17:09.670Z","batch":70,"error":"Transaction failed: Execution error without revert data","ms":4012}
+{"at":"2026-10-18T05:17:14.882Z","batch":1,"created":1,"txHash":"0xbce9d88d37506c9ed6eff4be1332673f5efc33f8673e430b8eafa6621824e335","block":725434,"gasUsed":137944,"gasPerEntity":137944,"costGLM":"0.000137944000275888","costPerEntityGLM":"0.000137944000275888","ms":3328,"status":"success","expiryDays":"400"}
+{"at":"2026-10-18T05:17:22.099Z","batch":25,"created":25,"txHash":"0xe65e55d1ebb778f731c97cd82db7bb67efe89714390ebb85d735c9f895eb5c6d","block":725436,"gasUsed":3448600,"gasPerEntity":137944,"costGLM":"0.0034486000068972","costPerEntityGLM":"0.000137944000275888","ms":7217,"status":"success","expiryDays":"400"}
