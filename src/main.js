@@ -268,11 +268,40 @@ async function runVerify() {
   }
 }
 
+// Theme: system (default) -> light -> dark. Stored per browser; the saved choice is
+// applied by an inline script in index.html before first paint.
+const THEMES = ["system", "light", "dark"]
+const THEME_ICON = { system: "contrast", light: "light_mode", dark: "dark_mode" }
+function savedTheme() {
+  try {
+    const t = localStorage.getItem("claim-check-theme")
+    return THEMES.includes(t) ? t : "system"
+  } catch {
+    return "system"
+  }
+}
+function applyTheme(theme) {
+  if (theme === "system") delete document.documentElement.dataset.theme
+  else document.documentElement.dataset.theme = theme
+  try {
+    if (theme === "system") localStorage.removeItem("claim-check-theme")
+    else localStorage.setItem("claim-check-theme", theme)
+  } catch {
+    // not persisted; the toggle still works for this visit
+  }
+  const btn = $("#theme-btn")
+  btn.querySelector(".icon").textContent = THEME_ICON[theme]
+  btn.setAttribute("aria-label", t(`theme.${theme}`))
+  btn.title = t(`theme.${theme}`)
+  btn.dataset.theme = theme
+}
+
 // Static text marked with data-i18n / data-i18n-placeholder in index.html.
 function translateStatic() {
   document.querySelectorAll("[data-i18n]").forEach((el) => (el.textContent = t(el.dataset.i18n)))
   document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => el.setAttribute("placeholder", t(el.dataset.i18nPlaceholder)))
   document.querySelectorAll("[data-lang]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lang === getLang() ? "true" : "false"))
+  applyTheme($("#theme-btn").dataset.theme ?? savedTheme())
 }
 
 function currentTab() {
@@ -322,6 +351,10 @@ $("#search-form").addEventListener("submit", (ev) => {
 $("#version-select").addEventListener("change", renderChanges)
 $("#state-filter").addEventListener("change", renderChanges)
 $("#verify-btn").addEventListener("click", runVerify)
+$("#theme-btn").addEventListener("click", () => {
+  const current = $("#theme-btn").dataset.theme ?? savedTheme()
+  applyTheme(THEMES[(THEMES.indexOf(current) + 1) % THEMES.length])
+})
 document.addEventListener("click", (ev) => {
   const retry = ev.target.closest("[data-retry]")
   if (retry) {
