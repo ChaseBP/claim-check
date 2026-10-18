@@ -2,6 +2,7 @@ import {
   ArkivUnavailable, search, loadSources, loadChecks, verifyInsurer, changesIn, statusOf, headBlock, secondsLeft,
 } from "../shared/arkiv-read.js"
 import { EXPLORER, INSURERS, TRUSTED_CREATORS } from "../shared/config.js"
+import { startLive } from "./live.js"
 
 const $ = (sel) => document.querySelector(sel)
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c])
@@ -205,7 +206,40 @@ $("#state-filter").addEventListener("change", renderChanges)
 $("#verify-btn").addEventListener("click", runVerify)
 document.addEventListener("click", (ev) => {
   if (ev.target.matches("[data-retry]")) {
-    refreshMeta().then(route)
+    function toast(text) {
+  const el = document.createElement("div")
+  el.className = "toast"
+  el.setAttribute("role", "status")
+  el.innerHTML = `<span class="icon" aria-hidden="true">bolt</span>${esc(text)}`
+  document.body.append(el)
+  setTimeout(() => el.classList.add("out"), 4200)
+  setTimeout(() => el.remove(), 4800)
+}
+
+let refreshTimer = null
+function refreshSoon(message) {
+  clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(async () => {
+    await refreshMeta()
+    toast(message)
+    const [tab] = (location.hash.replace(/^#/, "") || "lookup").split("/")
+    if (tab === "sources") renderSources()
+  }, 1500) // coalesce a burst of events into one re-read
+}
+
+refreshMeta().then(() => {
+  route()
+  startLive({
+    leaseKeys: () => new Set(Object.values(state.checks).map((c) => c.key.toLowerCase())),
+    onPublisherWrite: () => refreshSoon("New records from the publisher arrived on Arkiv"),
+    onLeaseRenewed: () => refreshSoon("Freshness lease renewed: the insurer's live PDF was re-verified"),
+    onStatus: (s) => {
+      const el = $("#live")
+      el.dataset.state = s
+      el.textContent = s === "live" ? "Live" : s === "paused" ? "Live updates paused" : "Live off"
+    },
+  })
+})
   }
 })
 window.addEventListener("hashchange", route)
@@ -213,4 +247,37 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden && Date.now() - state.loadedAt > 5 * 60 * 1000) refreshMeta()
 })
 
-refreshMeta().then(route)
+function toast(text) {
+  const el = document.createElement("div")
+  el.className = "toast"
+  el.setAttribute("role", "status")
+  el.innerHTML = `<span class="icon" aria-hidden="true">bolt</span>${esc(text)}`
+  document.body.append(el)
+  setTimeout(() => el.classList.add("out"), 4200)
+  setTimeout(() => el.remove(), 4800)
+}
+
+let refreshTimer = null
+function refreshSoon(message) {
+  clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(async () => {
+    await refreshMeta()
+    toast(message)
+    const [tab] = (location.hash.replace(/^#/, "") || "lookup").split("/")
+    if (tab === "sources") renderSources()
+  }, 1500) // coalesce a burst of events into one re-read
+}
+
+refreshMeta().then(() => {
+  route()
+  startLive({
+    leaseKeys: () => new Set(Object.values(state.checks).map((c) => c.key.toLowerCase())),
+    onPublisherWrite: () => refreshSoon("New records from the publisher arrived on Arkiv"),
+    onLeaseRenewed: () => refreshSoon("Freshness lease renewed: the insurer's live PDF was re-verified"),
+    onStatus: (s) => {
+      const el = $("#live")
+      el.dataset.state = s
+      el.textContent = s === "live" ? "Live" : s === "paused" ? "Live updates paused" : "Live off"
+    },
+  })
+})
