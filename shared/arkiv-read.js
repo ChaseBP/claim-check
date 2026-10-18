@@ -93,8 +93,10 @@ function decodeEntity(raw) {
 }
 
 const SELECT = { key: true, creator: true, owner: true, expiresAt: true, createdAt: true, creationFlags: true, attributes: true, payload: true }
-// Queries draw on a metered budget, so callers that only need attributes skip payloads.
-const SELECT_ATTRS = { key: true, creator: true, attributes: true }
+// Queries draw on a metered budget that appears to scale with data returned, so
+// callers ask only for the attributes they use.
+const SELECT_MATCH = { key: true, creator: true, attributes: { hospital: true } }
+const SELECT_REPLAY = { key: true, creator: true, attributes: { kind: true, hospital: true, version: true } }
 
 /** Every matching entity, read page by page at one block. */
 export async function queryAll(expression, { maxPages = 60, select = SELECT } = {}) {
@@ -169,7 +171,7 @@ export async function search(text, { limitHospitals = 60 } = {}) {
   const expression = pin
     ? pin.length === 6 ? `type = ${quote("event")} AND pin = ${quote(pin)}` : `type = ${quote("event")} AND pin STARTSWITH ${quote(pin)}`
     : `type = ${quote("event")} AND name STARTSWITH ${quote(term)}`
-  const { entities, block } = await queryAll(expression, { select: SELECT_ATTRS })
+  const { entities, block } = await queryAll(expression, { select: SELECT_MATCH })
   const keys = [...new Set(entities.map((e) => e.attrs.hospital))]
   const truncated = keys.length > limitHospitals
   const events = await eventsForHospitals(keys.slice(0, limitHospitals))
@@ -225,7 +227,7 @@ export function statusOf(timeline, latestVersion) {
 export async function verifyInsurer(insurer) {
   const [{ sources }, { entities, block }] = await Promise.all([
     loadSources(),
-    queryAll(`type = ${quote("event")} AND insurer = ${quote(insurer)}`, { maxPages: 80, select: SELECT_ATTRS }),
+    queryAll(`type = ${quote("event")} AND insurer = ${quote(insurer)}`, { maxPages: 80, select: SELECT_REPLAY }),
   ])
   const versions = sources.filter((s) => s.insurer === insurer)
   const byVersion = new Map()

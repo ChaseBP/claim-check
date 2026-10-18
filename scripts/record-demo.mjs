@@ -16,7 +16,7 @@ const cli = execFileSync("node", ["cli/claim-check.mjs", "search", "131021"], { 
 
 const browser = await chromium.launch()
 const context = await browser.newContext({
-  viewport: { width: 1280, height: 720 }, colorScheme: "dark", deviceScaleFactor: 1,
+  viewport: { width: 1280, height: 720 }, colorScheme: "light", deviceScaleFactor: 1,
   recordVideo: { dir: out, size: { width: 1280, height: 720 } },
 })
 const page = await context.newPage()
@@ -29,8 +29,8 @@ async function caption(text, ms = 4000) {
       el = document.createElement("div")
       el.id = "demo-cap"
       el.style.cssText = "position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99;max-width:1080px;" +
-        "background:#f9f9f9;color:#1b1b1b;border-radius:28px;padding:14px 26px;font:500 21px/1.35 Rubik,system-ui,sans-serif;" +
-        "box-shadow:0 10px 40px rgba(0,0,0,.45);text-align:center;transition:opacity .35s cubic-bezier(.2,0,0,1)"
+        "background:#181614;color:#f7f4ec;border-radius:12px;padding:14px 24px;font:500 20px/1.4 'Zen Kaku Gothic New',system-ui,sans-serif;" +
+        "box-shadow:0 10px 40px rgba(0,0,0,.35);text-align:center;border-left:4px solid #ab3830;transition:opacity .35s cubic-bezier(.2,0,0,1)"
       document.body.append(el)
     }
     el.style.opacity = "0"
@@ -45,10 +45,11 @@ async function card(title, body, ms) {
   await page.evaluate(([t, b]) => {
     const el = document.createElement("div")
     el.id = "demo-card"
-    el.style.cssText = "position:fixed;inset:0;z-index:98;display:grid;place-items:center;background:#0e0e0e;color:#e5e5e5;" +
-      "font-family:Rubik,system-ui,sans-serif;text-align:center;padding:40px"
-    el.innerHTML = `<div><div style="font-size:54px;font-weight:600;letter-spacing:-.01em">${t}</div>` +
-      `<div style="margin-top:18px;font-size:24px;color:#ababab;max-width:900px;line-height:1.45">${b}</div></div>`
+    el.style.cssText = "position:fixed;inset:0;z-index:98;display:grid;place-items:center;background:#f7f4ec;color:#181614;" +
+      "font-family:'Zen Kaku Gothic New',system-ui,sans-serif;text-align:center;padding:40px"
+    el.innerHTML = `<div><div style="width:64px;height:64px;margin:0 auto 22px;border-radius:12px;background:#ab3830;transform:rotate(-4deg)"></div>` +
+      `<div style="font:400 72px/1.05 Gloock,Georgia,serif">${t}</div>` +
+      `<div style="margin-top:18px;font-size:24px;color:#524d45;max-width:900px;line-height:1.45">${b}</div></div>`
     document.body.append(el)
   }, [title, body])
   await pause(ms)
@@ -113,7 +114,7 @@ await page.evaluate((text) => {
   el.id = "demo-term"
   el.textContent = "$ node cli/claim-check.mjs search 131021\n" + text
   el.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:97;width:1120px;max-height:520px;overflow:hidden;" +
-    "background:#131313;color:#e5e5e5;border-radius:25px;padding:26px 30px;font:15px/1.5 'CaskaydiaCove NF','JetBrains Mono',monospace;" +
+    "background:#181614;color:#f2eee6;border-radius:14px;padding:26px 30px;font:15px/1.5 'IBM Plex Mono',monospace;" +
     "box-shadow:0 20px 60px rgba(0,0,0,.6);white-space:pre-wrap"
   document.body.append(el)
 }, cli)
