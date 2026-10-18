@@ -1,0 +1,24 @@
+{
+  "name": "claim-check",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "bunx --bun vite",
+    "build": "bunx --bun vite build",
+    "preview": "bunx --bun vite preview",
+    "extract": ".venv/bin/python -I pipeline/extract.py && .venv/bin/python -I pipeline/events.py",
+    "publish:data": "bun scripts/publish.ts",
+    "check": "bun scripts/check.ts",
+    "cli": "bun cli/claim-check.mjs"
+  },
+  "dependencies": {
+    "@arkiv-network/sdk": "0.8.1",
+    "viem": "2.38.2"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3",
+    "vite": "6.3.5"
+  }
+}
