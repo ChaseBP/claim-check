@@ -1,0 +1,38 @@
+[
+  {
+    "doc_id": "hdfc-ergo-2023-12-28",
+    "insurer": "hdfc-ergo",
+    "insurer_name": "HDFC ERGO General Insurance",
+    "url": "https://web.archive.org/web/20240101124922id_/https://www.hdfcergo.com/docs/default-source/documents/exclusion-list.pdf",
+    "original_url": "https://www.hdfcergo.com/docs/default-source/documents/exclusion-list.pdf",
+    "file": "hdfc-ergo-wb-20240101.pdf",
+    "note": "Internet Archive capture of 1 Jan 2024 (HTTP 200). The original URL no longer serves this file."
+  },
+  {
+    "doc_id": "hdfc-ergo-2024-03-18",
+    "insurer": "hdfc-ergo",
+    "insurer_name": "HDFC ERGO General Insurance",
+    "url": "https://web.archive.org/web/20240406192700id_/https://www.hdfcergo.com/docs/default-source/documents/exclusion-list-march-new.pdf",
+    "original_url": "https://www.hdfcergo.com/docs/default-source/documents/exclusion-list-march-new.pdf",
+    "file": "hdfc-ergo-wb-20240406.pdf",
+    "note": "Internet Archive capture of 6 Apr 2024 (HTTP 200)."
+  },
+  {
+    "doc_id": "hdfc-ergo-2026-03-18",
+    "insurer": "hdfc-ergo",
+    "insurer_name": "HDFC ERGO General Insurance",
+    "url": "https://www.hdfcergo.com/docs/default-source/documents/exclusion-list-12-02-2025.pdf",
+    "original_url": "https://www.hdfcergo.com/docs/default-source/documents/exclusion-list-12-02-2025.pdf",
+    "file": "hdfc-ergo-2025-02-12.pdf",
+    "note": "Served live at a URL labelled 12-02-2025, but the PDF was created 2026-03-18 and lists effective dates up to 2026-01-30: the insurer replaced the file behind an old link. Versions are identified by content hash and PDF creation date, never by the URL label."
+  },
+  {
+    "doc_id": "hdfc-ergo-2026-03-21",
+    "insurer": "hdfc-ergo",
+    "insurer_name": "HDFC ERGO General Insurance",
+    "url": "https://customer-portal-assets.hdfcergo.com/documents/Exclusionlist_20-March-2026-688622144788.pdf",
+    "original_url": "https://customer-portal-assets.hdfcergo.com/documents/Exclusionlist_20-March-2026-688622144788.pdf",
+    "file": "hdfc-ergo-2026-03-20.pdf",
+    "note": "Published live as the 20 March 2026 exclusion list."
+  }
+]
