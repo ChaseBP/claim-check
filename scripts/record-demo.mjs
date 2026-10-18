@@ -5,12 +5,15 @@
 // freshness-lease renewal arrives over the WebSocket while the camera is rolling.
 // If demo/voice/manifest.json exists (from scripts/narrate.mjs), each scene is held for its
 // voice clip and the clips are mixed into the video at the moment each caption appears.
+// With a voiceover the captions are not drawn on the video (pass --captions to keep them);
+// they are written to demo/claim-check-demo.srt for the video host instead.
 import { spawn, execFileSync } from "node:child_process"
-import { existsSync, mkdirSync, readFileSync, renameSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ?? "playwright-core")
 const url = process.argv[2] ?? "http://localhost:4173/"
 const renew = process.argv.includes("--renew")
+const burnCaptions = process.argv.includes("--captions")
 const out = "demo"
 mkdirSync(out, { recursive: true })
 
@@ -35,7 +38,7 @@ const cues = []
 function cue(id) {
   const clip = voice?.[id]
   if (!clip) return 0
-  cues.push({ file: clip.file, at: Date.now() - t0 + 250 })
+  cues.push({ file: clip.file, at: Date.now() - t0 + 250, seconds: clip.seconds, say: clip.say })
   return clip.seconds * 1000 + 450
 }
 
@@ -48,6 +51,7 @@ const MARK = `<svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true"
 
 async function caption(id, text, ms = 4000) {
   text = voice?.[id]?.caption ?? text
+  if (voice && !burnCaptions) return pause(Math.max(ms, cue(id)))
   await page.evaluate((t) => {
     let el = document.getElementById("demo-cap")
     if (!el) {
@@ -172,5 +176,23 @@ if (cues.length) {
     "-c:a", "aac", "-b:a", "160k", "-ar", "44100", `${out}/claim-check-demo.mp4`])
 } else {
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", ...trim, "-i", `${out}/claim-check-demo.webm`, ...encode, `${out}/claim-check-demo.mp4`])
+}
+if (cues.length) {
+  // Subtitles follow the spoken words, timed to the trimmed video.
+  const ts = (ms) => new Date(Math.max(0, ms)).toISOString().slice(11, 23).replace(".", ",")
+  // Long lines are split into sentences, each timed in proportion to its length.
+  const parts = cues.filter((c) => c.say).flatMap((c) => {
+    const sentences = c.say.match(/[^.!?]+[.!?]+/g)?.map((x) => x.trim()) ?? [c.say]
+    const chars = sentences.reduce((a, x) => a + x.length, 0)
+    let start = c.at - head
+    return sentences.map((text) => {
+      const ms = (text.length / chars) * c.seconds * 1000
+      const part = { start, end: start + ms, text }
+      start += ms
+      return part
+    })
+  })
+  const srt = parts.map((p, i) => `${i + 1}\n${ts(p.start)} --> ${ts(p.end)}\n${p.text}\n`).join("\n")
+  writeFileSync(`${out}/claim-check-demo.srt`, srt)
 }
 console.log(`wrote ${out}/claim-check-demo.mp4${cues.length ? ` with ${cues.length} voice clips` : ""}`)

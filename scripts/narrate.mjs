@@ -34,7 +34,7 @@ for (const [i, line] of lines.entries()) {
     console.log(`generated ${file}`)
   }
   const seconds = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file], { encoding: "utf8" }))
-  manifest[line.id] = { file, seconds, caption: line.caption ?? null }
+  manifest[line.id] = { file, seconds, say: line.say, caption: line.caption ?? null }
 }
 writeFileSync(`${dir}/manifest.json`, JSON.stringify(manifest, null, 2))
 const total = Object.values(manifest).reduce((a, m) => a + m.seconds, 0)
