@@ -2,7 +2,7 @@
 
 **Has your health insurer excluded this hospital, and since when?** Every version of the insurer's exclusion list, kept as read-only records on Arkiv.
 
-Live app: **https://chasebp.github.io/claim-check/** · Track: Arkiv Global Tour Stop, **Best Indian Use Case** · Network: Arkiv Tiramisu · Licence: MIT
+Live app: **https://chasebp.github.io/claim-check/** · Demo video: **https://www.youtube.com/watch?v=tjXqfRtgieg** · Track: Arkiv Global Tour Stop, **Best Indian Use Case** · Network: Arkiv Tiramisu · Licence: MIT
 
 ## The problem
 
