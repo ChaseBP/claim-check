@@ -91,18 +91,21 @@ function renderAbsent(state, insurer) {
   </section>`
 }
 
-export function renderHospital(state, group, { link = true } = {}) {
+export const chipLegend = () => `<p class="legend"><span class="chip on">${esc(t("chip.sample"))}</span> ${esc(t("chip.legend"))}</p>`
+
+const rohiniOf = (group) => group.timelines.flatMap((tl) => tl.events).map((e) => e.entity.payload?.rohini).find(Boolean)
+
+export function renderHospital(state, group, { link = true, head = true } = {}) {
   const named = [...group.timelines].sort((a, b) => b.name.length - a.name.length)[0]
   const byInsurer = new Map(group.timelines.map((tl) => [tl.insurer, tl]))
   const badPin = named.pinValid ? "" : ` <span class="tag" title="${esc(t("pin.asPrintedTitle"))}">${esc(t("pin.asPrinted"))}</span>`
-  const rohini = group.timelines.flatMap((tl) => tl.events).map((e) => e.entity.payload?.rohini).find(Boolean)
+  const rohini = rohiniOf(group)
   const rohiniTag = rohini ? ` · <span title="${esc(t("hosp.rohiniTitle"))}">Rohini ${esc(rohini)}</span>` : ""
   const title = link ? `<a href="#/hospital/${esc(group.key)}">${esc(named.name)}</a>` : esc(named.name)
   return `<article class="card">
-    <div class="card-head"><div><h3>${title}</h3><p class="meta">${esc(named.city)}, ${esc(named.state)} · PIN ${esc(named.pin)}${badPin}${rohiniTag}</p></div>
-    ${link ? `<a class="card-link" href="#/hospital/${esc(group.key)}" aria-label="Open hospital page">${icon("arrow_outward")}</a>` : ""}</div>
+    ${head ? `<div class="card-head"><div><h3>${title}</h3><p class="meta">${esc(named.city)}, ${esc(named.state)} · PIN ${esc(named.pin)}${badPin}${rohiniTag}</p></div>
+    ${link ? `<a class="card-link" href="#/hospital/${esc(group.key)}" aria-label="Open hospital page">${icon("arrow_outward")}</a>` : ""}</div>` : ""}
     <div class="ins-list">${Object.keys(state.latest).map((i) => (byInsurer.has(i) ? renderInsurer(state, byInsurer.get(i)) : renderAbsent(state, i))).join("")}</div>
-    <p class="legend"><span class="chip on">${esc(t("chip.sample"))}</span> ${esc(t("chip.legend"))}</p>
   </article>`
 }
 
@@ -371,13 +374,14 @@ export function lookup(state, params) {
       if (!r.term) return (out.innerHTML = `<p class="muted">${esc(t("search.short"))}</p>`)
       if (!r.hospitals.length) {
         const held = Object.keys(state.latest).map(insurerName).join(", ")
-        out.innerHTML = `<div class="alert neutral">${icon("search_off")}<div>${t("search.none", { q: esc(q), i: esc(held) })}</div></div>`
+        out.innerHTML = `<div class="empty panel">${icon("search_off")}<div><h2 class="h3">${esc(t("search.noneH"))}</h2>
+          <p>${t("search.none", { q: esc(q), i: esc(held) })}</p><p class="muted">${esc(t("search.noneTip"))}</p></div></div>`
         return
       }
       const groups = groupByHospital(state, r.hospitals)
       const count = groups.length === 1 ? t("search.count1", { b: r.block }) : t("search.count", { n: num(groups.length), b: r.block })
       const more = r.truncated ? ` ${t("search.truncated", { n: num(groups.length), m: num(r.matched) })}` : ""
-      out.innerHTML = `<p class="result-count">${esc(count)}${esc(more)}</p>` + groups.map((g) => renderHospital(state, g)).join("")
+      out.innerHTML = `<div class="results-head"><p class="result-count">${esc(count)}${esc(more)}</p>${chipLegend()}</div>` + groups.map((g) => renderHospital(state, g)).join("")
     } catch (err) {
       out.innerHTML = unavailable(err, "err.what.search")
     }
@@ -389,7 +393,7 @@ export function lookup(state, params) {
 
 export function hospitalPage(state, key) {
   const html = `<section class="page"><div class="wrap">
-    <a class="back" href="javascript:history.back()">${icon("arrow_back")}${esc(t("hosp.back"))}</a>
+    <a class="back" href="#/lookup" data-back>${icon("arrow_back")}${esc(t("hosp.back"))}</a>
     <div id="hosp">${spinner(t("search.loading"))}</div>
   </div></section>`
   const after = async () => {
@@ -402,9 +406,10 @@ export function hospitalPage(state, key) {
       const named = [...timelines].sort((a, b) => b.name.length - a.name.length)[0]
       const url = location.href
       out.innerHTML = `<p class="eyebrow">${esc(t("hosp.eyebrow"))}</p><h1 class="h1">${esc(named.name)}</h1>
-        <p class="lede">${esc(named.city)}, ${esc(named.state)} · PIN ${esc(named.pin)}</p>
+        <p class="lede">${esc(named.city)}, ${esc(named.state)} · PIN ${esc(named.pin)}${rohiniOf(group) ? ` · <span title="${esc(t("hosp.rohiniTitle"))}">Rohini ${esc(rohiniOf(group))}</span>` : ""}</p>
         <div class="share"><span class="mono">${esc(t("hosp.key"))} ${esc(key)}</span>${copyBtn(url)}<span class="muted small">${esc(t("hosp.share"))}</span></div>
-        ${renderHospital(state, group, { link: false })}
+        ${renderHospital(state, group, { link: false, head: false })}
+        ${chipLegend()}
         <p class="caption">${esc(t("hosp.note"))}</p>`
       document.title = `${named.name} · Claim Check`
     } catch (err) {
@@ -434,8 +439,8 @@ function insurerBlock(state, insurer) {
     <div class="section-head"><div><h2 class="h2">${esc(insurerName(insurer))}</h2>
       <p class="muted">${esc(t("ins.summary", { n: versions.length, a: vlabel(versions[0]), b: vlabel(versions.at(-1)) }))}</p></div>
       <span class="pill ${f.live ? "ok" : "warn"}">${icon(f.live ? "verified" : "schedule")}${esc(f.live ? t("cov.fresh", { d: f.daysLeft.toFixed(1) }) : t("cov.stale"))}</span></div>
-    <div class="panel chart-panel">${bars(versions, { height: 60 })}<div class="chart-labels">${versions.map((v) => `<span>${esc(vlabel(v))}</span>`).join("")}</div></div>
-    <div class="table-wrap"><table><thead><tr><th>${esc(t("ins.c.version"))}</th><th>${esc(t("ins.c.hosp"))}</th><th>${esc(t("ins.c.delta"))}</th><th>${esc(t("ins.c.pdf"))}</th><th>${esc(t("ins.c.entity"))}</th><th></th></tr></thead><tbody>${
+    <div class="panel chart-panel">${bars(versions, { height: 60 })}<div class="chart-labels">${versions.map((v) => `<span><b>${num(v.hospitals)}</b>${esc(vlabel(v))}</span>`).join("")}</div></div>
+    <div class="table-wrap"><table><thead><tr><th>${esc(t("ins.c.version"))}</th><th>${esc(t("ins.c.hosp"))}</th><th>${esc(t("ins.c.delta"))}</th><th>${esc(t("ins.c.pdf"))}</th><th>${esc(t("ins.c.entity"))}</th><th><span class="sr-only">${esc(t("nav.changes"))}</span></th></tr></thead><tbody>${
       versions.map((v, i) => {
         const d = i ? v.hospitals - versions[i - 1].hospitals : null
         return `<tr><td class="nowrap"><b>${esc(vlabel(v))}</b><br><span class="muted small">v${v.version}</span></td><td>${num(v.hospitals)}</td>
@@ -491,12 +496,12 @@ export function changesPage(state, params) {
       const states = [...byState.entries()].sort((a, b) => (b[1].l + b[1].d) - (a[1].l + a[1].d))
       const prev = state.sources.find((s) => s.insurer === insurer && s.version === Number(version) - 1)
       out.innerHTML = `<p class="result-count">${esc(t("changes.compared", { v: vlabel(prev), b: block }))}</p>
-        <div class="change-tabs" role="tablist">
-          <button type="button" role="tab" data-ctab="listed" aria-selected="${ui.tab === "listed"}"><span class="k listed">+${num(listed.length)}</span> ${esc(t("changes.listed"))}</button>
-          <button type="button" role="tab" data-ctab="delisted" aria-selected="${ui.tab === "delisted"}"><span class="k delisted">−${num(delisted.length)}</span> ${esc(t("changes.delisted"))}</button>
+        <div class="change-tabs" role="tablist" aria-label="${esc(t("nav.changes"))}">
+          ${[["listed", "+", listed], ["delisted", "−", delisted]].map(([k, sign, list]) => `<button type="button" role="tab" id="ctab-${k}" data-ctab="${k}" aria-controls="change-list" aria-selected="${ui.tab === k}" tabindex="${ui.tab === k ? 0 : -1}"><span class="k ${k}">${list.length ? sign : ""}${num(list.length)}</span> ${esc(t(`changes.${k}`))}</button>`).join("")}
         </div>
-        <div class="change-grid">
-          <div class="panel list-panel">
+        ${!listed.length && !delisted.length ? `<div class="alert neutral">${icon("drag_handle")}<div>${esc(t("changes.same"))}</div></div>` : ""}
+        <div class="change-grid" ${!listed.length && !delisted.length ? "hidden" : ""}>
+          <div class="panel list-panel" id="change-list" role="tabpanel" aria-labelledby="ctab-${ui.tab}">
             <div class="list-tools"><label class="sr-only" for="change-filter">${esc(t("changes.filter"))}</label>
               <input id="change-filter" type="search" placeholder="${esc(t("changes.filter"))}" value="${esc(ui.text)}" />
               ${ui.stateFilter ? `<button type="button" class="chip-btn" data-state="">${esc(ui.stateFilter)} ${icon("close")}</button>` : ""}</div>
@@ -506,7 +511,7 @@ export function changesPage(state, params) {
               <button type="button" class="btn-secondary" data-page="${ui.page + 1}" ${ui.page >= pages - 1 ? "disabled" : ""}>${icon("chevron_right")}</button></div>` : ""}
           </div>
           <div class="panel state-panel"><h3 class="label">${esc(t("changes.bystate"))}</h3>
-            <table class="mini"><tbody>${states.slice(0, 14).map(([st, c]) => `<tr data-state="${esc(st)}" class="${ui.stateFilter === st ? "on" : ""}"><td>${esc(st)}</td><td class="k listed">+${c.l}</td><td class="k delisted">−${c.d}</td></tr>`).join("")}</tbody></table></div>
+            <table class="mini"><tbody>${states.map(([st, c]) => `<tr data-state="${esc(st)}" class="${ui.stateFilter === st ? "on" : ""}"><td>${esc(st)}</td><td class="k listed">+${c.l}</td><td class="k delisted">−${c.d}</td></tr>`).join("")}</tbody></table></div>
         </div>`
       const input = $("#change-filter")
       input.addEventListener("input", () => { ui.text = input.value; ui.page = 0; const pos = input.selectionStart; draw(); const again = $("#change-filter"); again.focus(); again.setSelectionRange(pos, pos) })
@@ -529,7 +534,7 @@ export function changesPage(state, params) {
     }
     $("#changes").addEventListener("click", (ev) => {
       const tab = ev.target.closest("[data-ctab]")
-      if (tab) { ui.tab = tab.dataset.ctab; ui.page = 0; draw() }
+      if (tab) { ui.tab = tab.dataset.ctab; ui.page = 0; draw(); $(`[data-ctab="${ui.tab}"]`)?.focus() }
       const pg = ev.target.closest("[data-page]")
       if (pg && !pg.disabled) { ui.page = Number(pg.dataset.page); draw(); $("#changes").scrollIntoView({ block: "start" }) }
       const st = ev.target.closest("[data-state]")
@@ -554,7 +559,7 @@ export function verifyPage(state) {
       <td class="nowrap">${esc(vlabel(s))}<br><span class="muted small">${esc(t("sources.pdfCreated", { d: s.pdf_created, p: s.pdf_pages }))}</span></td>
       <td class="nowrap">${num(s.hospitals)}<br><span class="muted small">${esc(t("sources.withheld", { n: s.withheld_count }))}</span></td>
       <td><a href="${esc(s.source_url)}" target="_blank" rel="noopener">PDF</a>${s.source_note ? `<br><span class="muted small">${esc(s.source_note)}</span>` : ""}</td>
-      <td class="mono small hash">${esc(s.sha256)}</td>
+      <td class="mono small nowrap" title="${esc(s.sha256)}">${esc(`${s.sha256.slice(0, 10)}…${s.sha256.slice(-8)}`)} ${copyBtn(s.sha256)}</td>
       <td>${entityLink(e.key)}<br><span class="muted small">${esc(flagText)}</span></td></tr>`
   }).join("")
   const leases = Object.entries(state.checks).map(([insurer, c]) => {
@@ -579,15 +584,23 @@ export function verifyPage(state) {
   const after = async () => {
     $("#verify-btn")?.addEventListener("click", async () => {
       const out = $("#verify-out")
+      const btn = $("#verify-btn")
+      btn.disabled = true
       out.innerHTML = spinner(t("verify.loading"))
+      const started = performance.now()
       try {
         const results = await Promise.all(Object.keys(state.latest).map(verifyInsurer))
+        const secs = ((performance.now() - started) / 1000).toFixed(1)
+        const total = results.reduce((a, r) => a + r.events, 0)
         const vc = t("verify.cols")
-        out.innerHTML = results.map((r) => `<div class="table-wrap"><table><thead><tr>${vc.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${
+        out.innerHTML = `<p class="caption">${esc(t("verify.colsNote"))}</p>` + results.map((r) => `<div class="table-wrap"><table><thead><tr>${vc.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${
           r.rows.map((x) => `<tr><td>${icon(x.ok ? "check_circle" : "error")}</td><td class="mono">${esc(x.doc)}</td><td>${num(x.declared)}</td><td>${num(x.replayed)}</td><td>${num(x.events)}</td></tr>`).join("")
-        }</tbody></table></div><div class="alert ${r.ok ? "ok" : "bad"}">${icon(r.ok ? "task_alt" : "error")}<div><b>${esc(r.ok ? t("verify.ok") : t("verify.bad"))}:</b> ${esc(t("verify.summary", { n: num(r.events), i: insurerName(r.insurer), b: r.block }))}</div></div>`).join("")
+        }</tbody></table></div><div class="alert ${r.ok ? "ok" : "bad"}">${icon(r.ok ? "check_circle" : "error")}<div><b>${esc(r.ok ? t("verify.ok") : t("verify.bad"))}:</b> ${esc(t("verify.summary", { n: num(r.events), i: insurerName(r.insurer), b: r.block }))}</div></div>`).join("") +
+          `<p class="caption">${esc(t("verify.time", { n: num(total), s: secs }))}</p>`
       } catch (err) {
         out.innerHTML = unavailable(err, "err.what.verify")
+      } finally {
+        btn.disabled = false
       }
     })
   }
@@ -645,6 +658,12 @@ export function aboutPage(state, sub) {
     <h1 class="h1">${esc(t("about.h1"))}</h1>
     <p class="lede">${esc(t("about.lede"))}</p>
     <div class="prose">${t("about.body")}</div>
+    <h2 class="h2" id="india">${esc(t("about.india.h"))}</h2>
+    <div class="prose">${t("about.india")}</div>
+    <h2 class="h2" id="arkiv">${esc(t("about.arkiv.h"))}</h2>
+    <p>${esc(t("about.arkiv.lede"))}</p>
+    ${(([head, ...rows]) => `<div class="table-wrap"><table class="compare"><thead><tr>${head.map((c) => `<th scope="col">${esc(c)}</th>`).join("")}</tr></thead><tbody>${
+      rows.map(([q, ...cells]) => `<tr><th scope="row">${esc(q)}</th>${cells.map((c, i) => `<td class="${i === cells.length - 1 ? "arkiv" : ""}">${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`)(t("about.cmp"))}
     <h2 class="h2" id="method">${esc(t("about.method.h"))}</h2>
     <div class="prose">${t("about.method")}</div>
     <h2 class="h2" id="limits">${esc(t("about.limits.h"))}</h2>
