@@ -3,8 +3,10 @@
 // e.g. http://localhost:4173/?rpc=http://localhost:8545 to read through scripts/rpc-cache.mjs.
 // --renew runs `bun scripts/check.ts` mid-recording (needs PUBLISHER_PRIVATE_KEY) so the
 // freshness-lease renewal arrives over the WebSocket while the camera is rolling.
+// If demo/voice/manifest.json exists (from scripts/narrate.mjs), each scene is held for its
+// voice clip and the clips are mixed into the video at the moment each caption appears.
 import { spawn, execFileSync } from "node:child_process"
-import { mkdirSync, readdirSync, renameSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, renameSync } from "node:fs"
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ?? "playwright-core")
 const url = process.argv[2] ?? "http://localhost:4173/"
@@ -23,7 +25,19 @@ const context = await browser.newContext({
   recordVideo: { dir: out, size: { width: 1280, height: 720 } },
 })
 const page = await context.newPage()
+const t0 = Date.now()
 const pause = (ms) => page.waitForTimeout(ms)
+
+const manifest = `${out}/voice/manifest.json`
+const voice = existsSync(manifest) ? JSON.parse(readFileSync(manifest, "utf8")) : null
+const cues = []
+// Queues a voice clip to start as the caption fades in; returns how long the scene must hold.
+function cue(id) {
+  const clip = voice?.[id]
+  if (!clip) return 0
+  cues.push({ file: clip.file, at: Date.now() - t0 + 250 })
+  return clip.seconds * 1000 + 450
+}
 
 // Logo mark used on the title cards (same shape as src/logo.js, fixed colours).
 const MARK = `<svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0e2230"/>` +
@@ -32,7 +46,8 @@ const MARK = `<svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true"
   `<rect x="10" y="20" width="30" height="38" rx="5" fill="#dcefe9" stroke="#0e2230" stroke-width="1.6"/>` +
   `<path d="M16 32h18M16 39h18M16 46h11" stroke="#0e2230" stroke-width="3" stroke-linecap="round"/></g></svg>`
 
-async function caption(text, ms = 4000) {
+async function caption(id, text, ms = 4000) {
+  text = voice?.[id]?.caption ?? text
   await page.evaluate((t) => {
     let el = document.getElementById("demo-cap")
     if (!el) {
@@ -46,12 +61,12 @@ async function caption(text, ms = 4000) {
     el.style.opacity = "0"
     setTimeout(() => { el.textContent = t; el.style.opacity = "1" }, 180)
   }, text)
-  await pause(ms)
+  await pause(Math.max(ms, cue(id)))
 }
 async function hideCaption() {
   await page.evaluate(() => document.getElementById("demo-cap")?.remove())
 }
-async function card(title, body, ms) {
+async function card(id, title, body, ms) {
   await page.evaluate(([t, b, mark]) => {
     const el = document.createElement("div")
     el.id = "demo-card"
@@ -62,7 +77,7 @@ async function card(title, body, ms) {
       `<div style="margin-top:18px;font-size:24px;color:#4a5560;max-width:900px;line-height:1.45">${b}</div></div>`
     document.body.append(el)
   }, [title, body, MARK])
-  await pause(ms)
+  await pause(Math.max(ms, cue(id)))
   await page.evaluate(() => document.getElementById("demo-card")?.remove())
 }
 async function go(hash, selector) {
@@ -85,42 +100,44 @@ async function scrollTo(selector) {
 
 await page.goto(`${url}#/`)
 await page.waitForSelector("#hero-card .card", { timeout: 60000 })
-await card("Claim Check", "Has your health insurer excluded this hospital, and since when?<br>Every version of the insurer's list, kept on Arkiv.", 4500)
-await caption("Indian insurers won't pay claims at hospitals on their exclusion lists. The lists are PDFs, replaced without notice.", 5500)
-await caption("The hero is a real record, read live from Arkiv: HDFC ERGO dropped Rama Hospital in March 2026; Tata AIG still excludes it.", 6500)
-await caption("Each insurer row names its source: the PDF version, row and page, and the read-only Arkiv record.", 5000)
+// The video starts at page creation; everything before the title card (page load) is cut.
+const head = Date.now() - t0
+await card("intro", "Claim Check", "Has your health insurer excluded this hospital, and since when?<br>Every version of the insurer's list, kept on Arkiv.", 4500)
+await caption("problem", "Indian insurers won't pay claims at hospitals on their exclusion lists. The lists are PDFs, replaced without notice.", 5500)
+await caption("hero", "The hero is a real record, read live from Arkiv: HDFC ERGO dropped Rama Hospital in March 2026; Tata AIG still excludes it.", 6500)
+await caption("proof", "Each insurer row names its source: the PDF version, row and page, and the read-only Arkiv record.", 5000)
 
 await scrollTo(".facts3")
-await caption("HDFC ERGO's lists dropped 1,815 hospitals between 2024 and 2026, and nobody announced it.", 5000)
+await caption("facts", "HDFC ERGO's lists dropped 1,815 hospitals between 2024 and 2026, and nobody announced it.", 5000)
 
 await go("#/lookup", "#q")
 await search("gaurav hospital")
-await caption("The reverse case: HDFC ERGO still excludes Gaurav Hospital; Tata AIG removed it in July 2025.", 6000)
+await caption("lookup", "The reverse case: HDFC ERGO still excludes Gaurav Hospital; Tata AIG removed it in July 2025.", 6000)
 
 await go("#/changes", "#changes .change-grid, #changes table, #changes li")
-await caption("Every version is compared with the one before it. HDFC ERGO's March 2026 list: +878, −1,815.", 5500)
+await caption("changes", "Every version is compared with the one before it. HDFC ERGO's March 2026 list: +878, −1,815.", 5500)
 await scrollTo(".state-panel")
-await caption("Broken down by state, and filterable by hospital, city or PIN.", 4000)
+await caption("state", "Broken down by state, and filterable by hospital, city or PIN.", 4000)
 
 await go("#/insurers", ".ins-block")
-await caption("Each version is its own Arkiv record carrying the PDF's SHA-256. HDFC's link labelled 12-02-2025 serves a file made in March 2026.", 6500)
+await caption("insurers", "Each version is its own Arkiv record carrying the PDF's SHA-256. HDFC's link labelled 12-02-2025 serves a file made in March 2026.", 6500)
 
 await go("#/verify", "#verify-btn")
 await page.click("#verify-btn")
-await caption("Replay: read every event from Arkiv at one block and check each version's declared count.", 3000)
+await caption("verify", "Replay: read every event from Arkiv at one block and check each version's declared count.", 3000)
 await page.waitForSelector("#verify-out .alert", { timeout: 120000 })
 await page.locator("#verify-out").scrollIntoViewIfNeeded()
-await caption("All 13 versions, 7,268 events: consistent.", 4500)
+await caption("verified", "All 13 versions, 7,268 events: consistent.", 4500)
 
 await scrollTo(".lease")
 if (renew) {
-  await caption("Freshness is a 14-day lease. We re-download each insurer's PDF; if the hash matches, extendEntity renews it…", 3500)
+  await caption("renew1", "Freshness is a 14-day lease. We re-download each insurer's PDF; if the hash matches, extendEntity renews it…", 3500)
   const child = spawn("bun", ["scripts/check.ts"], { stdio: "ignore", env: process.env })
   await page.waitForSelector(".toast", { timeout: 120000 }).catch(() => {})
-  await caption("…and every open page learns about it live, over a WebSocket subscription. Lapse means 'stale', never 'safe'.", 6000)
+  await caption("renew2", "…and every open page learns about it live, over a WebSocket subscription. Lapse means 'stale', never 'safe'.", 6000)
   await new Promise((r) => child.on("exit", r))
 } else {
-  await caption("Freshness is a 14-day lease renewed with extendEntity after re-hashing the insurer's PDF. Lapse means 'stale'.", 6000)
+  await caption("lease", "Freshness is a 14-day lease renewed with extendEntity after re-hashing the insurer's PDF. Lapse means 'stale'.", 6000)
 }
 
 await go("#/developers", ".code-tabs, pre")
@@ -133,16 +150,27 @@ await page.evaluate((text) => {
     "box-shadow:0 20px 60px rgba(0,0,0,.6);white-space:pre-wrap;border:1px solid #27343c"
   document.body.append(el)
 }, cli)
-await caption("No backend: the same answer from a zero-dependency CLI, straight from Arkiv, trusting only our publisher's $creator.", 7000)
+await caption("cli", "No backend: the same answer from a zero-dependency CLI, straight from Arkiv, trusting only our publisher's $creator.", 7000)
 await page.evaluate(() => document.getElementById("demo-term")?.remove())
 await hideCaption()
 
-await card("Claim Check", "HDFC ERGO · Tata AIG · 13 list versions · 7,268 events on Arkiv<br>github.com/ChaseBP/claim-check", 5000)
+await card("outro", "Claim Check", "HDFC ERGO · Tata AIG · 13 list versions · 7,268 events on Arkiv<br>github.com/ChaseBP/claim-check", 5000)
+const tail = Date.now() - t0
 
 await context.close()
 await browser.close()
-const webm = readdirSync(out).filter((f) => f.endsWith(".webm")).map((f) => `${out}/${f}`).at(-1)
-renameSync(webm, `${out}/claim-check-demo.webm`)
-execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", `${out}/claim-check-demo.webm`, "-c:v", "libx264", "-pix_fmt", "yuv420p",
-  "-crf", "20", "-movflags", "+faststart", `${out}/claim-check-demo.mp4`])
-console.log(`wrote ${out}/claim-check-demo.mp4`)
+renameSync(await page.video().path(), `${out}/claim-check-demo.webm`)
+const encode = ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", "-movflags", "+faststart"]
+const trim = ["-ss", String(head / 1000), "-to", String(tail / 1000)]
+if (cues.length) {
+  // Each clip is delayed to its cue time, mixed, loudness-normalised and padded to the video's length.
+  const inputs = cues.flatMap((c) => ["-i", c.file])
+  const delays = cues.map((c, i) => `[${i + 1}:a]adelay=${c.at - head}|${c.at - head}[a${i}]`).join(";")
+  const mix = `${cues.map((_, i) => `[a${i}]`).join("")}amix=inputs=${cues.length}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad[voice]`
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", ...trim, "-i", `${out}/claim-check-demo.webm`, ...inputs,
+    "-filter_complex", `${delays};${mix}`, "-map", "0:v", "-map", "[voice]", "-shortest", ...encode,
+    "-c:a", "aac", "-b:a", "160k", "-ar", "44100", `${out}/claim-check-demo.mp4`])
+} else {
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", ...trim, "-i", `${out}/claim-check-demo.webm`, ...encode, `${out}/claim-check-demo.mp4`])
+}
+console.log(`wrote ${out}/claim-check-demo.mp4${cues.length ? ` with ${cues.length} voice clips` : ""}`)
