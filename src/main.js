@@ -79,7 +79,9 @@ function parseHash() {
   return { parts, params: new URLSearchParams(query), anchor }
 }
 
+let routesSeen = 0
 async function route() {
+  routesSeen++
   const { parts, params, anchor } = parseHash()
   const [page = "", arg] = parts
   if (!state.loadedAt && !state.error) await refreshMeta()
@@ -118,7 +120,8 @@ const revealer = "IntersectionObserver" in window && !reduced
     }), { rootMargin: "0px 0px -10% 0px" })
   : null
 function animateIn(root) {
-  const targets = root.querySelectorAll(".section .wrap > *, .page .wrap > *, .facts3 > div, .cov, .faq details, .doc-links > a, .dev-facts > .panel, .lease")
+  // Page headers render at once; only content below them fades in.
+  const targets = root.querySelectorAll(".section .wrap > *, .page .wrap > :not(.eyebrow, .h1, .lede, .back), .facts3 > div, .cov, .faq details, .doc-links > a, .dev-facts > .panel, .lease")
   targets.forEach((el, i) => {
     if (!revealer) return
     el.setAttribute("data-reveal", "")
@@ -250,6 +253,13 @@ document.addEventListener("click", async (ev) => {
     $("#menu-btn").setAttribute("aria-expanded", String(open))
     if (open) document.querySelector(".nav a")?.focus()
   }
+  // "Back" returns to the previous page when there is one in this visit, else goes to Lookup.
+  if (ev.target.closest("[data-back]") && routesSeen > 1) {
+    ev.preventDefault()
+    history.back()
+  }
+  // A tap on the dimmed page behind the open menu closes it.
+  if (ev.target === document.body && document.body.classList.contains("menu-open")) closeMenu({ focusButton: true })
   // The skip link moves focus to the content without touching the hash router.
   if (ev.target.closest(".skip")) {
     ev.preventDefault()
@@ -268,6 +278,11 @@ document.addEventListener("keydown", (ev) => {
     next.click()
     ev.preventDefault()
   }
+})
+
+// While the menu is open, focus stays in the header.
+document.addEventListener("focusin", (ev) => {
+  if (document.body.classList.contains("menu-open") && !ev.target.closest(".top")) document.querySelector(".nav a")?.focus()
 })
 
 window.addEventListener("hashchange", route)
