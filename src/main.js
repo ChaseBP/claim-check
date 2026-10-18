@@ -99,7 +99,7 @@ async function route() {
   app.innerHTML = (state.error && page === "" ? `<div class="wrap">${pages.unavailable(state.error)}</div>` : "") + view.html
   app.dataset.page = page || "home"
   document.querySelectorAll("[data-nav]").forEach((a) => a.setAttribute("aria-current", a.dataset.nav === page ? "page" : "false"))
-  document.title = page ? `${t(`nav.${page === "hospital" ? "lookup" : page}`)} · Claim Check` : "Claim Check · Hospital exclusions, on the record"
+  document.title = page ? `${t(`nav.${page === "hospital" ? "lookup" : page}`)} · Claim Check` : t("title.home")
   closeMenu()
   window.scrollTo(0, 0)
   animateIn(app)
@@ -174,9 +174,11 @@ function translateStatic() {
   applyTheme($("#theme-btn").dataset.theme ?? savedTheme())
 }
 
-function closeMenu() {
+function closeMenu({ focusButton = false } = {}) {
+  if (!document.body.classList.contains("menu-open")) return
   document.body.classList.remove("menu-open")
   $("#menu-btn")?.setAttribute("aria-expanded", "false")
+  if (focusButton) $("#menu-btn")?.focus()
 }
 
 function toast(text) {
@@ -225,7 +227,7 @@ document.addEventListener("click", async (ev) => {
   const tab = ev.target.closest("[data-tabs] [data-tab]")
   if (tab) {
     const box = tab.closest("[data-tabs]")
-    box.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b === tab)))
+    box.querySelectorAll("[data-tab]").forEach((b) => { b.setAttribute("aria-selected", String(b === tab)); b.tabIndex = b === tab ? 0 : -1 })
     box.querySelectorAll("[data-pane]").forEach((p) => (p.hidden = p.dataset.pane !== tab.dataset.tab))
   }
   if (ev.target.closest("[data-retry]")) {
@@ -246,6 +248,25 @@ document.addEventListener("click", async (ev) => {
   if (ev.target.closest("#menu-btn")) {
     const open = document.body.classList.toggle("menu-open")
     $("#menu-btn").setAttribute("aria-expanded", String(open))
+    if (open) document.querySelector(".nav a")?.focus()
+  }
+  // The skip link moves focus to the content without touching the hash router.
+  if (ev.target.closest(".skip")) {
+    ev.preventDefault()
+    $("#app").focus()
+  }
+})
+
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape") closeMenu({ focusButton: true })
+  // Arrow keys move between tabs in a tablist, as the WAI-ARIA tabs pattern expects.
+  const tab = ev.target.closest?.('[role="tab"]')
+  if (tab && (ev.key === "ArrowRight" || ev.key === "ArrowLeft")) {
+    const tabs = [...tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]')]
+    const next = tabs[(tabs.indexOf(tab) + (ev.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length]
+    next.focus()
+    next.click()
+    ev.preventDefault()
   }
 })
 
