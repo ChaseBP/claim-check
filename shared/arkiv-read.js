@@ -93,15 +93,17 @@ function decodeEntity(raw) {
 }
 
 const SELECT = { key: true, creator: true, owner: true, expiresAt: true, createdAt: true, creationFlags: true, attributes: true, payload: true }
+// Queries draw on a metered budget, so callers that only need attributes skip payloads.
+const SELECT_ATTRS = { key: true, creator: true, attributes: true }
 
 /** Every matching entity, read page by page at one block. */
-export async function queryAll(expression, { maxPages = 60 } = {}) {
+export async function queryAll(expression, { maxPages = 60, select = SELECT } = {}) {
   const full = `${scope()} AND ${expression}`
   const entities = []
   let cursor
   let block
   for (let page = 0; page < maxPages; page++) {
-    const options = { limit: "0xc8", select: SELECT }
+    const options = { limit: "0xc8", select }
     if (cursor) {
       options.cursor = cursor
       options.atBlock = block
@@ -167,7 +169,7 @@ export async function search(text, { limitHospitals = 60 } = {}) {
   const expression = pin
     ? pin.length === 6 ? `type = ${quote("event")} AND pin = ${quote(pin)}` : `type = ${quote("event")} AND pin STARTSWITH ${quote(pin)}`
     : `type = ${quote("event")} AND name STARTSWITH ${quote(term)}`
-  const { entities, block } = await queryAll(expression)
+  const { entities, block } = await queryAll(expression, { select: SELECT_ATTRS })
   const keys = [...new Set(entities.map((e) => e.attrs.hospital))]
   const truncated = keys.length > limitHospitals
   const events = await eventsForHospitals(keys.slice(0, limitHospitals))
@@ -223,7 +225,7 @@ export function statusOf(timeline, latestVersion) {
 export async function verifyInsurer(insurer) {
   const [{ sources }, { entities, block }] = await Promise.all([
     loadSources(),
-    queryAll(`type = ${quote("event")} AND insurer = ${quote(insurer)}`, { maxPages: 80 }),
+    queryAll(`type = ${quote("event")} AND insurer = ${quote(insurer)}`, { maxPages: 80, select: SELECT_ATTRS }),
   ])
   const versions = sources.filter((s) => s.insurer === insurer)
   const byVersion = new Map()
