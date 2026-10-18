@@ -6,7 +6,8 @@
     "url": "https://web.archive.org/web/20240101124922id_/https://www.hdfcergo.com/docs/default-source/documents/exclusion-list.pdf",
     "original_url": "https://www.hdfcergo.com/docs/default-source/documents/exclusion-list.pdf",
     "file": "hdfc-ergo-wb-20240101.pdf",
-    "note": "Internet Archive capture of 1 Jan 2024 (HTTP 200). The original URL no longer serves this file."
+    "note": "Internet Archive capture of 1 Jan 2024 (HTTP 200). The original URL no longer serves this file.",
+    "format": "hdfc"
   },
   {
     "doc_id": "hdfc-ergo-2024-03-18",
@@ -15,7 +16,8 @@
     "url": "https://web.archive.org/web/20240406192700id_/https://www.hdfcergo.com/docs/default-source/documents/exclusion-list-march-new.pdf",
     "original_url": "https://www.hdfcergo.com/docs/default-source/documents/exclusion-list-march-new.pdf",
     "file": "hdfc-ergo-wb-20240406.pdf",
-    "note": "Internet Archive capture of 6 Apr 2024 (HTTP 200)."
+    "note": "Internet Archive capture of 6 Apr 2024 (HTTP 200).",
+    "format": "hdfc"
   },
   {
     "doc_id": "hdfc-ergo-2026-03-18",
@@ -24,7 +26,8 @@
     "url": "https://www.hdfcergo.com/docs/default-source/documents/exclusion-list-12-02-2025.pdf",
     "original_url": "https://www.hdfcergo.com/docs/default-source/documents/exclusion-list-12-02-2025.pdf",
     "file": "hdfc-ergo-2025-02-12.pdf",
-    "note": "Served live at a URL labelled 12-02-2025, but the PDF was created 2026-03-18 and lists effective dates up to 2026-01-30: the insurer replaced the file behind an old link. Versions are identified by content hash and PDF creation date, never by the URL label."
+    "note": "Served live at a URL labelled 12-02-2025, but the PDF was created 2026-03-18 and lists effective dates up to 2026-01-30: the insurer replaced the file behind an old link. Versions are identified by content hash and PDF creation date, never by the URL label.",
+    "format": "hdfc"
   },
   {
     "doc_id": "hdfc-ergo-2026-03-21",
@@ -33,6 +36,115 @@
     "url": "https://customer-portal-assets.hdfcergo.com/documents/Exclusionlist_20-March-2026-688622144788.pdf",
     "original_url": "https://customer-portal-assets.hdfcergo.com/documents/Exclusionlist_20-March-2026-688622144788.pdf",
     "file": "hdfc-ergo-2026-03-20.pdf",
-    "note": "Published live as the 20 March 2026 exclusion list."
+    "note": "Published live as the 20 March 2026 exclusion list.",
+    "format": "hdfc"
+  },
+  {
+    "doc_id": "tata-aig-2025-04",
+    "insurer": "tata-aig",
+    "insurer_name": "Tata AIG General Insurance",
+    "format": "tata",
+    "label_date": "2025-04-01",
+    "label_month": "Apr'25",
+    "url": "https://www.tataaig.com/s3/Apr_25_Excluded_Hospitals_b51cf81cb0.pdf",
+    "original_url": "https://www.tataaig.com/s3/Apr_25_Excluded_Hospitals_b51cf81cb0.pdf",
+    "file": "tata-Apr_25_Excluded_Hospitals_b51cf81cb0.pdf",
+    "note": "Tata AIG's monthly list labelled Apr'25 on https://www.tataaig.com/excluded-hospital-list. Every monthly PDF was generated on 2026-01-16, so versions are ordered by the insurer's month label."
+  },
+  {
+    "doc_id": "tata-aig-2025-05",
+    "insurer": "tata-aig",
+    "insurer_name": "Tata AIG General Insurance",
+    "format": "tata",
+    "label_date": "2025-05-01",
+    "label_month": "May'25",
+    "url": "https://www.tataaig.com/s3/May_25_Excluded_Hospitals_191bdd26d7.pdf",
+    "original_url": "https://www.tataaig.com/s3/May_25_Excluded_Hospitals_191bdd26d7.pdf",
+    "file": "tata-May_25_Excluded_Hospitals_191bdd26d7.pdf",
+    "note": "Tata AIG's monthly list labelled May'25 on https://www.tataaig.com/excluded-hospital-list. Every monthly PDF was generated on 2026-01-16, so versions are ordered by the insurer's month label."
+  },
+  {
+    "doc_id": "tata-aig-2025-06",
+    "insurer": "tata-aig",
+    "insurer_name": "Tata AIG General Insurance",
+    "format": "tata",
+    "label_date": "2025-06-01",
+    "label_month": "Jun'25",
+    "url": "https://www.tataaig.com/s3/Jun_25_Excluded_Hospitals_b6ac389b95.pdf",
+    "original_url": "https://www.tataaig.com/s3/Jun_25_Excluded_Hospitals_b6ac389b95.pdf",
+    "file": "tata-Jun_25_Excluded_Hospitals_b6ac389b95.pdf",
+    "note": "Tata AIG's monthly list labelled Jun'25 on https://www.tataaig.com/excluded-hospital-list. Every monthly PDF was generated on 2026-01-16, so versions are ordered by the insurer's month label."
+  },
+  {
+    "doc_id": "tata-aig-2025-07",
+    "insurer": "tata-aig",
+    "insurer_name": "Tata AIG General Insurance",
+    "format": "tata",
+    "label_date": "2025-07-01",
+    "label_month": "Jul'25",
+    "url": "https://www.tataaig.com/s3/Jul_25_Excluded_Hospitals_c76ea47727.pdf",
+    "original_url": "https://www.tataaig.com/s3/Jul_25_Excluded_Hospitals_c76ea47727.pdf",
+    "file": "tata-Jul_25_Excluded_Hospitals_c76ea47727.pdf",
+    "note": "Tata AIG's monthly list labelled Jul'25 on https://www.tataaig.com/excluded-hospital-list. Every monthly PDF was generated on 2026-01-16, so versions are ordered by the insurer's month label."
+  },
+  {
+    "doc_id": "tata-aig-2025-08",
+    "insurer": "tata-aig",
+    "insurer_name": "Tata AIG General Insurance",
+    "format": "tata",
+    "label_date": "2025-08-01",
+    "label_month": "Aug'25",
+    "url": "https://www.tataaig.com/s3/Aug_25_Excluded_Hospitals_d43ca28eaa.pdf",
+    "original_url": "https://www.tataaig.com/s3/Aug_25_Excluded_Hospitals_d43ca28eaa.pdf",
+    "file": "tata-Aug_25_Excluded_Hospitals_d43ca28eaa.pdf",
+    "note": "Tata AIG's monthly list labelled Aug'25 on https://www.tataaig.com/excluded-hospital-list. Every monthly PDF was generated on 2026-01-16, so versions are ordered by the insurer's month label."
+  },
+  {
+    "doc_id": "tata-aig-2025-09",
+    "insurer": "tata-aig",
+    "insurer_name": "Tata AIG General Insurance",
+    "format": "tata",
+    "label_date": "2025-09-01",
+    "label_month": "Sep'25",
+    "url": "https://www.tataaig.com/s3/Sep_25_Excluded_Hospitals_1a1803f490.pdf",
+    "original_url": "https://www.tataaig.com/s3/Sep_25_Excluded_Hospitals_1a1803f490.pdf",
+    "file": "tata-Sep_25_Excluded_Hospitals_1a1803f490.pdf",
+    "note": "Tata AIG's monthly list labelled Sep'25 on https://www.tataaig.com/excluded-hospital-list. Every monthly PDF was generated on 2026-01-16, so versions are ordered by the insurer's month label."
+  },
+  {
+    "doc_id": "tata-aig-2025-10",
+    "insurer": "tata-aig",
+    "insurer_name": "Tata AIG General Insurance",
+    "format": "tata",
+    "label_date": "2025-10-01",
+    "label_month": "Oct'25",
+    "url": "https://www.tataaig.com/s3/Oct_25_Excluded_Hospitals_462e7e96df.pdf",
+    "original_url": "https://www.tataaig.com/s3/Oct_25_Excluded_Hospitals_462e7e96df.pdf",
+    "file": "tata-Oct_25_Excluded_Hospitals_462e7e96df.pdf",
+    "note": "Tata AIG's monthly list labelled Oct'25 on https://www.tataaig.com/excluded-hospital-list. Every monthly PDF was generated on 2026-01-16, so versions are ordered by the insurer's month label."
+  },
+  {
+    "doc_id": "tata-aig-2025-11",
+    "insurer": "tata-aig",
+    "insurer_name": "Tata AIG General Insurance",
+    "format": "tata",
+    "label_date": "2025-11-01",
+    "label_month": "Nov'25",
+    "url": "https://www.tataaig.com/s3/Nov_25_Excluded_Hospitals_86a8510036.pdf",
+    "original_url": "https://www.tataaig.com/s3/Nov_25_Excluded_Hospitals_86a8510036.pdf",
+    "file": "tata-Nov_25_Excluded_Hospitals_86a8510036.pdf",
+    "note": "Tata AIG's monthly list labelled Nov'25 on https://www.tataaig.com/excluded-hospital-list. Every monthly PDF was generated on 2026-01-16, so versions are ordered by the insurer's month label."
+  },
+  {
+    "doc_id": "tata-aig-2025-12",
+    "insurer": "tata-aig",
+    "insurer_name": "Tata AIG General Insurance",
+    "format": "tata",
+    "label_date": "2025-12-01",
+    "label_month": "Dec'25",
+    "url": "https://www.tataaig.com/s3/Dec_25_Excluded_Hospitals_2f98f486f7.pdf",
+    "original_url": "https://www.tataaig.com/s3/Dec_25_Excluded_Hospitals_2f98f486f7.pdf",
+    "file": "tata-Dec_25_Excluded_Hospitals_2f98f486f7.pdf",
+    "note": "Tata AIG's monthly list labelled Dec'25 on https://www.tataaig.com/excluded-hospital-list. Every monthly PDF was generated on 2026-01-16, so versions are ordered by the insurer's month label."
   }
 ]

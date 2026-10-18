@@ -28,7 +28,8 @@ const { rows: _rows, ...doc } = JSON.parse(readFileSync(`data/${DOC}.json`, "utf
 const old = manifest.sources[DOC]
 
 const entity = await publicClient.getEntity(old.key)
-const current = entity.attributes.find((a: { key?: string; name?: string }) => (a.key ?? a.name) === "version")
+const attrs = entity.attributes as unknown as Record<string, unknown>
+const current = Array.isArray(attrs) ? attrs.find((a) => a.name === "version") : attrs.version
 console.log(`current version attribute on ${old.key}:`, current)
 
 const { txHash, createdEntities } = await wallet.executeBatch({

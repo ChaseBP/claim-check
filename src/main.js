@@ -8,6 +8,8 @@ const $ = (sel) => document.querySelector(sel)
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c])
 const insurerName = (id) => INSURERS[id] ?? id
 const fmtDate = (iso) => (iso ? new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "unknown date")
+const vdate = (s) => s?.version_date ?? s?.pdf_created
+const vlabel = (s) => (s?.label_month ? s.label_month.replace("'", " ’") : fmtDate(s?.pdf_created))
 const short = (h) => `${h.slice(0, 10)}…${h.slice(-6)}`
 const entityLink = (key) => `<a class="mono" href="${EXPLORER}/entity/${key}" target="_blank" rel="noopener">${short(key)}</a>`
 
@@ -51,10 +53,10 @@ function renderBanner() {
   el.innerHTML = Object.keys(state.latest).map((insurer) => {
     const f = freshness(insurer)
     const versions = state.sources.filter((s) => s.insurer === insurer)
-    const span = `${fmtDate(versions[0]?.pdf_created)} – ${fmtDate(versions.at(-1)?.pdf_created)}`
+    const span = `${vlabel(versions[0])} – ${vlabel(versions.at(-1))}`
     return f.live
       ? `<div class="alert ok"><span class="icon" aria-hidden="true">verified</span><div><b>${esc(insurerName(insurer))}</b>: ${versions.length} list versions (${span}). Live PDF re-verified ${esc(f.checkedAt?.slice(0, 10))}; freshness lease ${f.daysLeft.toFixed(1)} days left.</div></div>`
-      : `<div class="alert warn"><span class="icon" aria-hidden="true">schedule</span><div><b>${esc(insurerName(insurer))}: stale.</b> No live re-verification lease, so the insurer's current list may differ from the latest version shown (${fmtDate(versions.at(-1)?.pdf_created)}).</div></div>`
+      : `<div class="alert warn"><span class="icon" aria-hidden="true">schedule</span><div><b>${esc(insurerName(insurer))}: stale.</b> No live re-verification lease, so the insurer's current list may differ from the latest version shown (${vlabel(versions.at(-1))}).</div></div>`
   }).join("")
   $("#block-info").textContent = `Read live from Arkiv Tiramisu at block ${state.head} · publisher ${short(Object.keys(TRUSTED_CREATORS)[0])}`
 }
@@ -68,7 +70,7 @@ function versionChips(timeline) {
     if (e) on = e.kind === "listed"
     const cls = on ? "chip on" : "chip"
     const title = `${s.doc_id}: ${on ? "on the list" : "not on the list"}${e ? ` (${e.kind} here)` : ""}`
-    return `<span class="${cls}" title="${esc(title)}">${esc(fmtDate(s.pdf_created))}</span>`
+    return `<span class="${cls}" title="${esc(title)}">${esc(vlabel(s))}</span>`
   }).join("")
 }
 
@@ -79,12 +81,15 @@ function renderTimeline(t) {
   const pill = s.state === "excluded"
     ? `<span class="pill bad"><span class="icon" aria-hidden="true">block</span>Excluded by ${esc(insurerName(t.insurer))}</span>`
     : `<span class="pill ok"><span class="icon" aria-hidden="true">check_circle</span>Removed from ${esc(insurerName(t.insurer))}'s list</span>`
+  const since = src?.effective_basis === "list-month"
+    ? `On every monthly list since ${esc(vlabel(src))}.`
+    : `Effective ${esc(fmtDate(s.effective))} (insurer's date). On every version since ${esc(vlabel(src))}.`
   const detail = s.state === "excluded"
-    ? `Effective ${esc(fmtDate(s.effective))}. On every version since ${esc(fmtDate(src?.pdf_created))}.${f.live ? "" : " <b>Stale:</b> the insurer's current list has not been re-verified."}`
-    : `Dropped in the version created ${esc(fmtDate(src?.pdf_created))}.`
+    ? `${since}${f.live ? "" : " <b>Stale:</b> the insurer's current list has not been re-verified."}`
+    : `Dropped in the ${esc(vlabel(src))} version.`
   const rows = t.events.map((e) => {
     const doc = state.sources.find((x) => x.doc_id === e.doc)
-    return `<li><span class="k ${e.kind}">${e.kind}</span> in ${esc(fmtDate(doc?.pdf_created))} list${e.sr ? ` · row ${e.sr}, page ${e.page}` : ""} · ${doc ? `<a href="${esc(doc.source_url)}" target="_blank" rel="noopener">PDF</a>` : ""} · ${entityLink(e.entity.key)}</li>`
+    return `<li><span class="k ${e.kind}">${e.kind}</span> in ${esc(vlabel(doc))} list${e.sr ? ` · row ${e.sr}, page ${e.page}` : ""} · ${doc ? `<a href="${esc(doc.source_url)}" target="_blank" rel="noopener">PDF</a>` : ""} · ${entityLink(e.entity.key)}</li>`
   }).join("")
   return `<article class="card">
     <div class="card-head"><div><h3>${esc(t.name)}</h3><p class="muted">${esc(t.city)}, ${esc(t.state)} · PIN ${esc(t.pin)}${t.pinValid ? "" : " <span class='tag' title='The insurer printed a malformed PIN; shown exactly as printed'>as printed</span>"}</p></div>${pill}</div>
@@ -121,8 +126,9 @@ async function renderChanges() {
   const sel = $("#version-select")
   const versions = state.sources.filter((s) => s.version > 0)
   if (!sel.options.length) {
-    sel.innerHTML = versions.map((s) => `<option value="${s.insurer}|${s.version}">${esc(insurerName(s.insurer))} · ${esc(fmtDate(s.pdf_created))}</option>`).join("")
-    sel.value = `${versions.at(-2)?.insurer}|${versions.at(-2)?.version}`
+    sel.innerHTML = versions.map((s) => `<option value="${s.insurer}|${s.version}">${esc(insurerName(s.insurer))} · ${esc(vlabel(s))}</option>`).join("")
+    const pick = versions.filter((s) => s.insurer === "hdfc-ergo").at(-2) ?? versions[0]
+    sel.value = `${pick?.insurer}|${pick?.version}`
   }
   const out = $("#changes")
   const [insurer, version] = (sel.value || "").split("|")
@@ -138,7 +144,7 @@ async function renderChanges() {
     const L = f(listed), D = f(delisted)
     const prev = state.sources.find((s) => s.insurer === insurer && s.version === Number(version) - 1)
     const item = (h) => `<li><a href="#lookup/${encodeURIComponent(h.pin)}">${esc(h.name)}</a> <span class="muted">${esc(h.city)}, ${esc(h.pin)}</span></li>`
-    out.innerHTML = `<p class="muted">Compared with the version created ${esc(fmtDate(prev?.pdf_created))} · read at block ${block}</p>
+    out.innerHTML = `<p class="muted">Compared with the ${esc(vlabel(prev))} version · read at block ${block}</p>
       <div class="cols"><div class="panel"><h2><span class="k listed count">+${L.length}</span> listed</h2><ul class="plain">${L.map(item).join("") || "<li class='muted'>None</li>"}</ul></div>
       <div class="panel"><h2><span class="k delisted count">−${D.length}</span> delisted</h2><ul class="plain">${D.map(item).join("") || "<li class='muted'>None</li>"}</ul></div></div>`
   } catch (err) {
@@ -154,7 +160,7 @@ function renderSources() {
     const flags = e.flags ?? {}
     const days = Math.round(secondsLeft(e.expiresAt, state.head) / 86400)
     return `<tr><td>${esc(insurerName(s.insurer))}<br><span class="muted">v${s.version}</span></td>
-      <td>${esc(fmtDate(s.pdf_created))}<br><span class="muted">${s.pdf_pages} pages</span></td>
+      <td>${esc(vlabel(s))}<br><span class="muted">PDF created ${esc(s.pdf_created)} · ${s.pdf_pages} pages</span></td>
       <td>${s.hospitals}<br><span class="muted">${s.withheld_count} withheld</span></td>
       <td><a href="${esc(s.source_url)}" target="_blank" rel="noopener">PDF</a>${s.source_note ? `<br><span class="muted small">${esc(s.source_note)}</span>` : ""}</td>
       <td class="mono small">${esc(s.sha256)}</td>
@@ -164,7 +170,7 @@ function renderSources() {
     const f = freshness(insurer)
     return `<li>${esc(insurerName(insurer))}: re-verified ${esc(f.checkedAt)} against ${esc(c.attrs.doc)}, lease ${f.daysLeft.toFixed(1)} days left · ${entityLink(c.key)}</li>`
   }).join("") || "<li>No live freshness lease: every insurer is shown as stale.</li>"
-  out.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Insurer</th><th>PDF created</th><th>Hospitals</th><th>Source</th><th>SHA-256 of PDF</th><th>Arkiv entity</th></tr></thead><tbody>${rows}</tbody></table></div>
+  out.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Insurer</th><th>Version</th><th>Hospitals</th><th>Source</th><th>SHA-256 of PDF</th><th>Arkiv entity</th></tr></thead><tbody>${rows}</tbody></table></div>
     <h2>Freshness leases</h2><ul class="plain">${checks}</ul>`
 }
 

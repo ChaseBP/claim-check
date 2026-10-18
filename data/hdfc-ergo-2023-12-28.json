@@ -8,6 +8,8 @@
  "pdf_bytes": 1445754,
  "pdf_pages": 119,
  "pdf_created": "2023-12-28",
+ "version_date": "2023-12-28",
+ "effective_basis": "insurer",
  "row_count": 2747,
  "published_count": 2677,
  "withheld_count": 70,
@@ -29532,6 +29534,6 @@
    "page": 119
   }
  ],
- "retrieved_at": "2026-10-18T05:13:20Z",
+ "retrieved_at": "2026-10-18T05:39:53Z",
  "unique_hospitals": 2659
 }

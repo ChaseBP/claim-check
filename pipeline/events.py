@@ -60,7 +60,7 @@ def main():
 
     events, summary = [], []
     for insurer, versions in by_insurer.items():
-        versions.sort(key=lambda d: d["pdf_created"])
+        versions.sort(key=lambda d: d.get("version_date") or d["pdf_created"])
         keys = canonical_keys(versions)
         current = {}  # key -> row
         for v_index, doc in enumerate(versions):
@@ -74,7 +74,7 @@ def main():
                 events.append({"insurer": insurer, "doc_id": doc["doc_id"], "version": v_index, "kind": "listed",
                                "hospital_key": k, "name": r["name"], "city": r["city"], "state": r["state"],
                                "pin": r["pin"], "pin_valid": r["pin_valid"], "effective_date": r["effective_date"],
-                               "sr": r["sr"], "page": r["page"]})
+                               "sr": r["sr"], "page": r["page"], "rohini": r.get("rohini")})
             for k in removed:
                 r = current[k]
                 events.append({"insurer": insurer, "doc_id": doc["doc_id"], "version": v_index, "kind": "delisted",

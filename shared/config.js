@@ -23,4 +23,5 @@ export const CHECK_LEASE_DAYS = 14
 
 export const INSURERS = {
   "hdfc-ergo": "HDFC ERGO General Insurance",
+  "tata-aig": "Tata AIG General Insurance",
 }

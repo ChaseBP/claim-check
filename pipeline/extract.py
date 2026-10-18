@@ -46,6 +46,10 @@ STATE_ALIASES = {
     "DADRA AND NAGAR HAVELI": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
     "DAMAN AND DIU": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
     "ANDAMAN & NICOBAR ISLANDS": "ANDAMAN AND NICOBAR ISLANDS",
+    "DAMAN & DIU": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
+    "DADRA & NAGAR HAVELI": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
+    "DADRA & NAGAR HAVELI AND DAMAN & DIU": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
+    "PONDICHERRY UT": "PUDUCHERRY", "NCT DELHI": "DELHI",
 }
 
 
@@ -124,7 +128,26 @@ def parse_row(raw):
     }
 
 
+ROHINI_RE = re.compile(r"^(\d{13}|No Rohini)$", re.I)
+
+
+def parse_tata_row(raw, month_label):
+    """Tata AIG layout: Rohini ID, name, address, city, state, PIN, month."""
+    cells = [clean(c) for c in raw]
+    if len(cells) != 7 or not ROHINI_RE.match(cells[0]):
+        return None
+    rohini, name, _address, city, state_raw, pin, month = cells
+    state = canonical_state(state_raw)
+    if state is None or not PIN_RE.match(pin) or month.replace("’", "'") != month_label:
+        return None
+    return {"name": name, "city": city, "state": state, "pin": pin,
+            "pin_valid": bool(VALID_PIN_RE.match(pin)),
+            "rohini": rohini if rohini.isdigit() else None}
+
+
 def extract(source):
+    if source.get("format") == "tata":
+        return extract_tata(source)
     path = CACHE / source["file"]
     pdf_bytes = path.read_bytes()
     rows, rejected = [], []
@@ -168,12 +191,56 @@ def extract(source):
         "pdf_bytes": len(pdf_bytes),
         "pdf_pages": pages,
         "pdf_created": f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else None,
+        "version_date": f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else None,
+        "effective_basis": "insurer",
         "row_count": len(rows),
         "published_count": len(published),
         # Only the count and serial numbers of withheld rows are published.
         "withheld_count": len(withheld),
         "withheld_serials": [r["sr"] for r in withheld],
         "rows": [{k: r[k] for k in ("sr", "hospital_key", "name", "city", "state", "pin", "pin_valid", "effective_date", "page")} for r in published],
+    }
+
+
+def extract_tata(source):
+    path = CACHE / source["file"]
+    pdf_bytes = path.read_bytes()
+    label = source["label_month"]
+    rows, rejected = [], []
+    with pdfplumber.open(path) as pdf:
+        meta = pdf.metadata or {}
+        pages = len(pdf.pages)
+        for page_no, page in enumerate(pdf.pages, start=1):
+            for table in page.extract_tables():
+                for raw in table:
+                    first = clean(raw[0]) if raw and raw[0] else ""
+                    if not ROHINI_RE.match(first):
+                        continue  # title and header rows
+                    row = parse_tata_row(raw, label)
+                    if row:
+                        row["sr"] = len(rows) + 1  # Tata lists carry no serial; position in the PDF instead
+                        row["page"] = page_no
+                        row["effective_date"] = source["label_date"]
+                        rows.append(row)
+                    else:
+                        rejected.append({"page": page_no, "cells": [clean(c) for c in raw]})
+    if rejected or not rows:
+        raise SystemExit(f"{source['doc_id']}: refusing to write. unparsed data rows={rejected[:5]} rows={len(rows)}")
+
+    published, withheld = [], []
+    for row in rows:
+        row["hospital_key"] = hospital_key(row["name"], row["pin"])
+        (withheld if PERSON_NAME_RE.search(row["name"].upper()) else published).append(row)
+    m = re.match(r"D:(\d{4})(\d{2})(\d{2})", meta.get("CreationDate", ""))
+    return {
+        "doc_id": source["doc_id"], "insurer": source["insurer"], "insurer_name": source["insurer_name"],
+        "source_url": source["url"], "source_note": source.get("note", ""),
+        "sha256": hashlib.sha256(pdf_bytes).hexdigest(), "pdf_bytes": len(pdf_bytes), "pdf_pages": pages,
+        "pdf_created": f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else None,
+        "version_date": source["label_date"], "label_month": label, "effective_basis": "list-month",
+        "row_count": len(rows), "published_count": len(published),
+        "withheld_count": len(withheld), "withheld_serials": [r["sr"] for r in withheld],
+        "rows": [{k: r[k] for k in ("sr", "hospital_key", "name", "city", "state", "pin", "pin_valid", "effective_date", "page", "rohini")} for r in published],
     }
 
 

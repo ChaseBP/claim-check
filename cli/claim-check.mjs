@@ -47,7 +47,9 @@ async function main() {
         const s = statusOf(t, latest[t.insurer])
         const f = fresh[t.insurer]
         const stale = !f ? "  [STALE: no live re-verification of this insurer's list]" : ""
-        const label = s.state === "excluded" ? `EXCLUDED by ${t.insurer} (effective ${s.effective})` : `REMOVED from ${t.insurer}'s list in ${s.sinceDoc}`
+        const src = sources.find((x) => x.doc_id === s.sinceDoc)
+        const since = src?.effective_basis === "list-month" ? `on every monthly list since ${src.label_month}` : `effective ${s.effective}`
+        const label = s.state === "excluded" ? `EXCLUDED by ${t.insurer} (${since})` : `REMOVED from ${t.insurer}'s list in ${s.sinceDoc}`
         console.log(`${t.name} | ${t.city}, ${t.state} ${t.pin}${t.pinValid ? "" : " (PIN as printed by insurer)"}`)
         console.log(`  ${label}${stale}`)
         for (const e of t.events) console.log(`    ${e.kind.padEnd(8)} ${e.doc}${e.sr ? `  row ${e.sr}, page ${e.page}` : ""}  ${EXPLORER}/entity/${e.entity.key}`)
@@ -59,7 +61,7 @@ async function main() {
     case "sources": {
       const [{ sources, block }, fresh] = await Promise.all([loadSources(), freshness()])
       for (const s of sources) {
-        console.log(`${s.doc_id}  v${s.version}  created ${s.pdf_created}  ${s.hospitals} hospitals  sha256 ${s.sha256}`)
+        console.log(`${s.doc_id}  v${s.version}  ${s.label_month ? `list ${s.label_month}, ` : ""}PDF created ${s.pdf_created}  ${s.hospitals} hospitals  sha256 ${s.sha256}`)
         console.log(`  ${s.source_url}`)
       }
       for (const [insurer, f] of Object.entries(fresh)) console.log(`freshness ${insurer}: re-verified ${f.checkedAt}, lease ${f.daysLeft.toFixed(1)} days left`)
