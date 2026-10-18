@@ -58,7 +58,7 @@ function renderInsurer(state, tl) {
   const src = state.sources.find((x) => x.doc_id === s.sinceDoc)
   const pill = s.state === "excluded"
     ? `<span class="pill bad">${icon("block")}${esc(t("pill.excluded"))}</span>`
-    : `<span class="pill ok">${icon("check_circle")}${esc(t("pill.removed"))}</span>`
+    : `<span class="pill ok">${icon("history")}${esc(t("pill.removed"))}</span>`
   const since = src?.effective_basis === "list-month"
     ? t("ins.sinceMonth", { v: esc(vlabel(src)) })
     : t("ins.sinceDate", { d: esc(fmtDate(s.effective)), v: esc(vlabel(src)) })
@@ -69,11 +69,17 @@ function renderInsurer(state, tl) {
     const pdf = doc ? ` · <a href="${esc(doc.source_url)}" target="_blank" rel="noopener">PDF</a>` : ""
     return `<li><span class="k ${e.kind}">${esc(t(`kind.${e.kind}`))}</span> ${esc(t("ins.in", { v: vlabel(doc) }))}${where}${pdf} · ${entityLink(e.entity.key)}</li>`
   }).join("")
+  // The newest change is shown in the open: where it came from and its record on Arkiv.
+  const last = tl.events.at(-1)
+  const lastDoc = state.sources.find((x) => x.doc_id === last.doc)
+  const proof = `<p class="proof">${icon("description")}${esc(t("ins.source"))} ${esc(vlabel(lastDoc))}${last.sr ? `, ${esc(t("ins.row", { r: last.sr, p: last.page }))}` : ""}
+    ${lastDoc ? `· <a href="${esc(lastDoc.source_url)}" target="_blank" rel="noopener">${esc(t("ins.pdf"))}</a>` : ""} · ${esc(t("ins.record"))} ${entityLink(last.entity.key)}</p>`
   return `<section class="ins st-${s.state}">
     <div class="ins-head"><h4>${esc(insurerName(tl.insurer))}</h4>${pill}</div>
     <p>${detail}</p>
-    <div class="chips">${versionChips(state, tl)}</div>
-    <details><summary>${icon("expand_more")}${esc(t("ins.evidence"))}</summary><ul class="events">${rows}</ul></details>
+    <div class="chips" aria-label="${esc(t("chip.legend"))}">${versionChips(state, tl)}</div>
+    ${proof}
+    ${tl.events.length > 1 ? `<details><summary>${icon("expand_more")}${esc(t("ins.evidence"))}</summary><ul class="events">${rows}</ul></details>` : ""}
   </section>`
 }
 
@@ -89,11 +95,14 @@ export function renderHospital(state, group, { link = true } = {}) {
   const named = [...group.timelines].sort((a, b) => b.name.length - a.name.length)[0]
   const byInsurer = new Map(group.timelines.map((tl) => [tl.insurer, tl]))
   const badPin = named.pinValid ? "" : ` <span class="tag" title="${esc(t("pin.asPrintedTitle"))}">${esc(t("pin.asPrinted"))}</span>`
+  const rohini = group.timelines.flatMap((tl) => tl.events).map((e) => e.entity.payload?.rohini).find(Boolean)
+  const rohiniTag = rohini ? ` · <span title="${esc(t("hosp.rohiniTitle"))}">Rohini ${esc(rohini)}</span>` : ""
   const title = link ? `<a href="#/hospital/${esc(group.key)}">${esc(named.name)}</a>` : esc(named.name)
   return `<article class="card">
-    <div class="card-head"><div><h3>${title}</h3><p class="meta">${esc(named.city)}, ${esc(named.state)} · PIN ${esc(named.pin)}${badPin}</p></div>
+    <div class="card-head"><div><h3>${title}</h3><p class="meta">${esc(named.city)}, ${esc(named.state)} · PIN ${esc(named.pin)}${badPin}${rohiniTag}</p></div>
     ${link ? `<a class="card-link" href="#/hospital/${esc(group.key)}" aria-label="Open hospital page">${icon("arrow_outward")}</a>` : ""}</div>
     <div class="ins-list">${Object.keys(state.latest).map((i) => (byInsurer.has(i) ? renderInsurer(state, byInsurer.get(i)) : renderAbsent(state, i))).join("")}</div>
+    <p class="legend"><span class="chip on">${esc(t("chip.sample"))}</span> ${esc(t("chip.legend"))}</p>
   </article>`
 }
 
@@ -130,6 +139,9 @@ function bars(versions, { height = 46 } = {}) {
 
 // ---------------------------------------------------------------- home
 
+// Rama Hospital, Bahalgarh (Sonipat): dropped by HDFC ERGO in March 2026, still on Tata AIG's lists.
+const EXAMPLE_KEY = "b8260a4a4d538349"
+
 export function home(state) {
   const latest = (i) => versionsOf(state, i).at(-1)
   const hdfc = versionsOf(state, "hdfc-ergo")
@@ -156,7 +168,7 @@ export function home(state) {
         <div><dt>${esc(t("stat.block"))}</dt><dd>${state.head}</dd></div>
       </dl>
     </div>
-    <div class="hero-art" aria-hidden="true">${heroArt(state)}</div>
+    <div class="hero-example"><p class="label">${icon("radio_button_checked")} ${esc(t("hero.example"))}</p><div id="hero-card">${spinner(t("search.loading"))}</div></div>
   </div></section>
 
   <section class="section"><div class="wrap">
@@ -226,7 +238,7 @@ export function home(state) {
 
   <section class="section"><div class="wrap split faq-wrap">
     <div><p class="eyebrow">${esc(t("faq.eyebrow"))}</p><h2 class="h2">${esc(t("faq.h2"))}</h2><p class="lede">${esc(t("faq.lede"))}</p></div>
-    <div class="faq">${[1, 2, 3, 4, 5, 6].map((n) => `<details><summary>${esc(t(`faq.q${n}`))}${icon("add")}</summary><p>${t(`faq.a${n}`)}</p></details>`).join("")}</div>
+    <div class="faq">${[7, 1, 2, 3, 4, 5, 6].map((n) => `<details><summary>${esc(t(`faq.q${n}`))}${icon("add")}</summary><p>${t(`faq.a${n}`)}</p></details>`).join("")}</div>
   </div></section>
 
   <section class="section"><div class="wrap">
@@ -239,6 +251,12 @@ export function home(state) {
 
   const after = async () => {
     stepperInit(state)
+    // A real record as the hero: one hospital, both insurers, read live from Arkiv.
+    hospitalTimelines(EXAMPLE_KEY).then((timelines) => {
+      const el = $("#hero-card")
+      if (!el) return
+      el.innerHTML = timelines.length ? renderHospital(state, { key: EXAMPLE_KEY, timelines }) : ""
+    }).catch((err) => { const el = $("#hero-card"); if (el) el.innerHTML = unavailable(err, "err.what.search") })
     try {
       const tata = "tata-aig"
       const tv = versionsOf(state, tata).filter((v) => v.version > 0).slice(-4)
@@ -261,20 +279,6 @@ export function home(state) {
   return { html, after }
 }
 
-function heroArt(state) {
-  // A stack of list versions on rice paper; struck rows are exclusions, the seal is the publisher.
-  const v = versionsOf(state, "hdfc-ergo").length || 4
-  const sheets = Array.from({ length: Math.min(v, 4) }, (_, i) => i)
-  return `<svg viewBox="0 0 420 380" class="art">
-    ${sheets.map((i) => `<g transform="translate(${36 + i * 22} ${30 + i * 26}) rotate(${-4 + i * 2.5} 150 140)">
-      <rect width="300" height="230" rx="6" class="sheet" />
-      ${Array.from({ length: 8 }, (_, r) => `<rect x="24" y="${34 + r * 22}" width="${150 + ((r * 37 + i * 17) % 90)}" height="6" rx="3" class="${(r + i) % 4 === 1 ? "row-x" : (r + i) % 5 === 3 ? "row-ok" : "row"}" />`).join("")}
-      <text x="24" y="22" class="sheet-t">v${i}</text>
-    </g>`).join("")}
-    <g transform="translate(300 270) rotate(-8)"><rect x="-38" y="-38" width="76" height="76" rx="10" class="seal"/><path d="M-16 1 l10 10 l22 -24" class="seal-mark"/></g>
-  </svg>`
-}
-
 function coverageCard(state, insurer) {
   const versions = versionsOf(state, insurer)
   const f = freshness(state, insurer)
@@ -289,11 +293,11 @@ function codeTabs() {
   const tabs = [
     ["bun", "git clone https://github.com/ChaseBP/claim-check\ncd claim-check\nbun cli/claim-check.mjs search 131021\nbun cli/claim-check.mjs verify hdfc-ergo"],
     ["node", "git clone https://github.com/ChaseBP/claim-check\ncd claim-check\nnode cli/claim-check.mjs search 131021\nnode cli/claim-check.mjs verify tata-aig"],
-    ["curl", `curl -s ${RPC_URL} \\\n  -H 'Content-Type: application/json' -d \\\n  "{\\"jsonrpc\\":\\"2.0\\",\\"id\\":1,\\"method\\":\\"arkiv_query\\",\\"params\\":[\\"app = str('${APP}') AND type = str('event') AND pin = str('131021')\\",{\\"limit\\":\\"0xc8\\",\\"select\\":{\\"attributes\\":true,\\"payload\\":true}}]}"`],
+    ["curl", `curl -s ${RPC_URL} \\\n  -H 'Content-Type: application/json' -d \\\n  "{\\"jsonrpc\\":\\"2.0\\",\\"id\\":1,\\"method\\":\\"arkiv_query\\",\\"params\\":[\\"app = str('${APP}') AND v = i32(1) AND \\$creator = addr(${Object.keys(TRUSTED_CREATORS)[0]}) AND type = str('event') AND pin = str('131021')\\",{\\"limit\\":\\"0x14\\",\\"select\\":{\\"attributes\\":true}}]}"`],
   ]
   return `<div class="code panel" data-tabs>
-    <div class="code-tabs" role="tablist">${tabs.map(([n], i) => `<button type="button" role="tab" data-tab="${n}" aria-selected="${i === 0}">${n}</button>`).join("")}</div>
-    ${tabs.map(([n, code], i) => `<div class="code-body" data-pane="${n}" ${i ? "hidden" : ""}><pre><code>${esc(code).split("\n").map((l) => `<span class="prompt">$</span> ${l}`).join("\n")}</code></pre>${copyBtn(code)}</div>`).join("")}
+    <div class="code-tabs" role="tablist" aria-label="Command line">${tabs.map(([n], i) => `<button type="button" role="tab" id="tab-${n}" aria-controls="pane-${n}" data-tab="${n}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">${n}</button>`).join("")}</div>
+    ${tabs.map(([n, code], i) => `<div class="code-body" role="tabpanel" id="pane-${n}" aria-labelledby="tab-${n}" tabindex="0" data-pane="${n}" ${i ? "hidden" : ""}><pre><code>${esc(code).split("\n").map((l) => `<span class="prompt">$</span> ${l}`).join("\n")}</code></pre>${copyBtn(code)}</div>`).join("")}
   </div>`
 }
 
@@ -333,7 +337,10 @@ function stepperInit(state) {
     panel.innerHTML = panels[i]()
     document.querySelectorAll("[data-step]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.step) === i)))
   }
-  document.querySelectorAll("[data-step]").forEach((b) => b.addEventListener("click", () => show(Number(b.dataset.step))))
+  document.querySelectorAll("[data-step]").forEach((b) => b.addEventListener("click", () => {
+    show(Number(b.dataset.step))
+    if (matchMedia("(max-width: 900px)").matches) panel.scrollIntoView({ block: "nearest", behavior: "smooth" })
+  }))
   show(0)
 }
 
@@ -352,6 +359,10 @@ export function lookup(state, params) {
   const after = async () => {
     const out = $("#results")
     if (!q.trim()) return
+    if (/[^\x00-\x7F]/.test(q) && !/[A-Za-z0-9]/.test(q)) {
+      out.innerHTML = `<div class="alert neutral">${icon("translate")}<div>${esc(t("search.latin"))}</div></div>`
+      return
+    }
     out.innerHTML = spinner(t("search.loading"))
     try {
       if (state.error) throw state.error
@@ -365,7 +376,8 @@ export function lookup(state, params) {
       }
       const groups = groupByHospital(state, r.hospitals)
       const count = groups.length === 1 ? t("search.count1", { b: r.block }) : t("search.count", { n: num(groups.length), b: r.block })
-      out.innerHTML = `<p class="result-count">${esc(count)}${r.truncated ? esc(t("search.more")) : ""}</p>` + groups.map((g) => renderHospital(state, g)).join("")
+      const more = r.truncated ? ` ${t("search.truncated", { n: num(groups.length), m: num(r.matched) })}` : ""
+      out.innerHTML = `<p class="result-count">${esc(count)}${esc(more)}</p>` + groups.map((g) => renderHospital(state, g)).join("")
     } catch (err) {
       out.innerHTML = unavailable(err, "err.what.search")
     }
@@ -441,44 +453,90 @@ export function changesPage(state, params) {
   const versions = state.sources.filter((s) => s.version > 0)
   const pick = versions.find((s) => s.insurer === params.get("i") && String(s.version) === params.get("v")) ??
     versions.filter((s) => s.insurer === "hdfc-ergo").at(-2) ?? versions[0]
+  const delta = (s) => {
+    const prev = state.sources.find((x) => x.insurer === s.insurer && x.version === s.version - 1)
+    const d = prev ? s.hospitals - prev.hospitals : 0
+    return d > 0 ? `+${num(d)}` : d < 0 ? `−${num(-d)}` : "±0"
+  }
   const html = `<section class="page"><div class="wrap">
     <p class="eyebrow">${esc(t("changes.eyebrow"))}</p>
     <h1 class="h1">${esc(t("changes.h1"))}</h1>
     <p class="lede">${esc(t("changes.lede"))}</p>
     <div class="row">
       <label for="version-select">${esc(t("changes.version"))}</label>
-      <select id="version-select">${versions.map((s) => `<option value="${s.insurer}|${s.version}" ${s === pick ? "selected" : ""}>${esc(shortName(s.insurer))} · ${esc(vlabel(s))}</option>`).join("")}</select>
-      <label for="state-filter">${esc(t("changes.state"))}</label>
-      <select id="state-filter"><option value="">${esc(t("changes.allStates"))}</option></select>
+      <select id="version-select">${versions.map((s) => `<option value="${s.insurer}|${s.version}" ${s === pick ? "selected" : ""}>${esc(shortName(s.insurer))} · ${esc(vlabel(s))} (${delta(s)})</option>`).join("")}</select>
     </div>
     <div id="changes"></div>
   </div></section>`
+  const PAGE = 50
   const after = async () => {
-    const render = async () => {
+    let data = null
+    const ui = { tab: "listed", stateFilter: "", text: "", page: 0 }
+    const draw = () => {
+      const out = $("#changes")
+      if (!data) return
+      const { listed, delisted, block, insurer, version } = data
+      const all = ui.tab === "listed" ? listed : delisted
+      const q = ui.text.trim().toUpperCase()
+      const rows = all
+        .filter((h) => !ui.stateFilter || h.state === ui.stateFilter)
+        .filter((h) => !q || `${h.name} ${h.city} ${h.pin}`.toUpperCase().includes(q))
+        .sort((a, b) => a.name.localeCompare(b.name))
+      const pages = Math.max(1, Math.ceil(rows.length / PAGE))
+      ui.page = Math.min(ui.page, pages - 1)
+      const slice = rows.slice(ui.page * PAGE, ui.page * PAGE + PAGE)
+      const byState = new Map()
+      for (const h of listed) byState.set(h.state, { ...(byState.get(h.state) ?? { l: 0, d: 0 }), l: (byState.get(h.state)?.l ?? 0) + 1 })
+      for (const h of delisted) byState.set(h.state, { ...(byState.get(h.state) ?? { l: 0, d: 0 }), d: (byState.get(h.state)?.d ?? 0) + 1 })
+      const states = [...byState.entries()].sort((a, b) => (b[1].l + b[1].d) - (a[1].l + a[1].d))
+      const prev = state.sources.find((s) => s.insurer === insurer && s.version === Number(version) - 1)
+      out.innerHTML = `<p class="result-count">${esc(t("changes.compared", { v: vlabel(prev), b: block }))}</p>
+        <div class="change-tabs" role="tablist">
+          <button type="button" role="tab" data-ctab="listed" aria-selected="${ui.tab === "listed"}"><span class="k listed">+${num(listed.length)}</span> ${esc(t("changes.listed"))}</button>
+          <button type="button" role="tab" data-ctab="delisted" aria-selected="${ui.tab === "delisted"}"><span class="k delisted">−${num(delisted.length)}</span> ${esc(t("changes.delisted"))}</button>
+        </div>
+        <div class="change-grid">
+          <div class="panel list-panel">
+            <div class="list-tools"><label class="sr-only" for="change-filter">${esc(t("changes.filter"))}</label>
+              <input id="change-filter" type="search" placeholder="${esc(t("changes.filter"))}" value="${esc(ui.text)}" />
+              ${ui.stateFilter ? `<button type="button" class="chip-btn" data-state="">${esc(ui.stateFilter)} ${icon("close")}</button>` : ""}</div>
+            <ul class="plain">${slice.map((h) => `<li><a href="#/hospital/${esc(h.key)}">${esc(h.name)}</a> <span class="muted">${esc(h.city)}, ${esc(h.state)} · ${esc(h.pin)}</span></li>`).join("") || `<li class="muted">${esc(t("changes.none"))}</li>`}</ul>
+            ${pages > 1 ? `<div class="pager"><button type="button" class="btn-secondary" data-page="${ui.page - 1}" ${ui.page === 0 ? "disabled" : ""}>${icon("chevron_left")}</button>
+              <span class="mono small">${esc(t("changes.page", { a: num(ui.page * PAGE + 1), b: num(Math.min(rows.length, ui.page * PAGE + PAGE)), n: num(rows.length) }))}</span>
+              <button type="button" class="btn-secondary" data-page="${ui.page + 1}" ${ui.page >= pages - 1 ? "disabled" : ""}>${icon("chevron_right")}</button></div>` : ""}
+          </div>
+          <div class="panel state-panel"><h3 class="label">${esc(t("changes.bystate"))}</h3>
+            <table class="mini"><tbody>${states.slice(0, 14).map(([st, c]) => `<tr data-state="${esc(st)}" class="${ui.stateFilter === st ? "on" : ""}"><td>${esc(st)}</td><td class="k listed">+${c.l}</td><td class="k delisted">−${c.d}</td></tr>`).join("")}</tbody></table></div>
+        </div>`
+      const input = $("#change-filter")
+      input.addEventListener("input", () => { ui.text = input.value; ui.page = 0; const pos = input.selectionStart; draw(); const again = $("#change-filter"); again.focus(); again.setSelectionRange(pos, pos) })
+    }
+    const load = async () => {
       const out = $("#changes")
       const [insurer, version] = $("#version-select").value.split("|")
       out.innerHTML = spinner(t("changes.loading"))
       try {
-        const { listed, delisted, block } = await changesIn(insurer, version)
-        const stateSel = $("#state-filter")
-        const states = [...new Set([...listed, ...delisted].map((h) => h.state))].sort()
-        const keep = stateSel.value
-        stateSel.innerHTML = `<option value="">${esc(t("changes.allStates"))}</option>` + states.map((s) => `<option${s === keep ? " selected" : ""}>${esc(s)}</option>`).join("")
-        const f = (list) => list.filter((h) => !stateSel.value || h.state === stateSel.value).sort((a, b) => a.name.localeCompare(b.name))
-        const L = f(listed), D = f(delisted)
-        const prev = state.sources.find((s) => s.insurer === insurer && s.version === Number(version) - 1)
-        const item = (h) => `<li><a href="#/hospital/${esc(h.key)}">${esc(h.name)}</a> <span class="muted">${esc(h.city)}, ${esc(h.pin)}</span></li>`
-        const none = `<li class="muted">${esc(t("changes.none"))}</li>`
-        out.innerHTML = `<p class="result-count">${esc(t("changes.compared", { v: vlabel(prev), b: block }))}</p>
-          <div class="cols"><div class="panel list-panel"><h3><span class="k listed count">+${num(L.length)}</span> ${esc(t("changes.listed"))}</h3><ul class="plain">${L.map(item).join("") || none}</ul></div>
-          <div class="panel list-panel"><h3><span class="k delisted count">−${num(D.length)}</span> ${esc(t("changes.delisted"))}</h3><ul class="plain">${D.map(item).join("") || none}</ul></div></div>`
+        const c = await changesIn(insurer, version)
+        data = { ...c, insurer, version }
+        ui.page = 0
+        ui.stateFilter = ""
+        ui.text = ""
+        ui.tab = c.listed.length || !c.delisted.length ? "listed" : "delisted"
+        draw()
       } catch (err) {
         out.innerHTML = unavailable(err, "err.what.changes")
       }
     }
-    $("#version-select").addEventListener("change", () => { $("#state-filter").value = ""; render() })
-    $("#state-filter").addEventListener("change", render)
-    if (versions.length) render()
+    $("#changes").addEventListener("click", (ev) => {
+      const tab = ev.target.closest("[data-ctab]")
+      if (tab) { ui.tab = tab.dataset.ctab; ui.page = 0; draw() }
+      const pg = ev.target.closest("[data-page]")
+      if (pg && !pg.disabled) { ui.page = Number(pg.dataset.page); draw(); $("#changes").scrollIntoView({ block: "start" }) }
+      const st = ev.target.closest("[data-state]")
+      if (st) { ui.stateFilter = ui.stateFilter === st.dataset.state ? "" : st.dataset.state; ui.page = 0; draw() }
+    })
+    $("#version-select").addEventListener("change", load)
+    if (versions.length) load()
   }
   return { html, after }
 }
@@ -566,7 +624,7 @@ export function developersPage() {
     <div class="table-wrap"><table><thead><tr><th>type</th><th>${esc(t("dev.c.what"))}</th><th>${esc(t("dev.c.life"))}</th><th>${esc(t("dev.c.flags"))}</th><th>${esc(t("dev.c.attrs"))}</th></tr></thead><tbody>${
       entities.map(([ty, what, life, flags, attrs]) => `<tr><td class="mono"><b>${ty}</b></td><td>${esc(what)}</td><td class="nowrap">${esc(life)}</td><td class="mono small">${esc(flags)}</td><td class="mono small">${esc(attrs)}</td></tr>`).join("")}</tbody></table></div>
     <h2 class="h3">${esc(t("dev.queries"))}</h2>
-    <div class="query-list">${queries.map(([label, q]) => `<div class="query panel"><span class="label">${esc(label)}</span><code>${esc(q)}</code>${copyBtn(q)}</div>`).join("")}</div>
+    <div class="query-list">${queries.map(([label, q]) => `<div class="query panel"><span class="label">${esc(label)}</span><code>${esc(q.replace(creator, short(creator)))}</code>${copyBtn(q)}</div>`).join("")}</div>
     <p class="caption">${esc(t("dev.paging"))}</p>
     <h2 class="h3">${esc(t("dev.cli"))}</h2>
     ${codeTabs()}
