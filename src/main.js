@@ -1,7 +1,7 @@
 import {
   ArkivUnavailable, search, loadSources, loadChecks, verifyInsurer, changesIn, statusOf, headBlock, secondsLeft,
 } from "../shared/arkiv-read.js"
-import { EXPLORER, INSURERS, TRUSTED_CREATORS } from "../shared/config.js"
+import { EXPLORER, INSURERS, INSURER_SHORT, TRUSTED_CREATORS } from "../shared/config.js"
 import { startLive } from "./live.js"
 import { t, getLang, setLang } from "./i18n.js"
 
@@ -239,9 +239,9 @@ function renderSources() {
     const flags = e.flags ?? {}
     const days = Math.round(secondsLeft(e.expiresAt, state.head) / 86400)
     const flagText = `${flags.readonly ? t("sources.readonly") : t("sources.mutable")}${flags.permissionlessExtension ? ` · ${t("sources.anyone")}` : ""} · ${t("sources.daysLeft", { n: days })}`
-    return `<tr><td>${esc(insurerName(s.insurer))}<br><span class="muted">v${s.version}</span></td>
-      <td>${esc(vlabel(s))}<br><span class="muted">${esc(t("sources.pdfCreated", { d: s.pdf_created, p: s.pdf_pages }))}</span></td>
-      <td>${num(s.hospitals)}<br><span class="muted">${esc(t("sources.withheld", { n: s.withheld_count }))}</span></td>
+    return `<tr><td class="nowrap">${esc(INSURER_SHORT[s.insurer] ?? insurerName(s.insurer))}<br><span class="muted">v${s.version}</span></td>
+      <td class="nowrap">${esc(vlabel(s))}<br><span class="muted small">${esc(t("sources.pdfCreated", { d: s.pdf_created, p: s.pdf_pages }))}</span></td>
+      <td class="nowrap">${num(s.hospitals)}<br><span class="muted small">${esc(t("sources.withheld", { n: s.withheld_count }))}</span></td>
       <td><a href="${esc(s.source_url)}" target="_blank" rel="noopener">PDF</a>${s.source_note ? `<br><span class="muted small">${esc(s.source_note)}</span>` : ""}</td>
       <td class="mono small">${esc(s.sha256)}</td>
       <td>${entityLink(e.key)}<br><span class="muted small">${esc(flagText)}</span></td></tr>`

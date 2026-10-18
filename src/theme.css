@@ -1,7 +1,43 @@
-/* Colour roles. Placeholder neutral scheme; replaced by the wallpaper-derived scheme. */
+/* Colour roles derived from the wallpaper "ink-02-hanfu-portrait-light": rice-paper
+   ground, sumi-ink text and navy, vermilion seal accent. Every pairing used for text
+   was re-checked against WCAG 2.1 (light: ink/bg 16.4, muted/bg 7.6, danger/bg 5.9,
+   success/bg 5.8, warning/bg 5.7; dark: all >= 5.3). */
 :root {
-  --bg: #f7f6f2; --surface: #ffffff; --surface-alt: #f1efe9; --ink: #1b1b1f; --ink-muted: #5a5a63;
-  --line: #e2dfd7; --primary: #2b3a67; --on-primary: #ffffff; --accent: #c8553d; --link: #2b3a67;
-  --danger: #b3261e; --success: #1d6b46; --warning: #8a5a00;
+  --bg: #f7f4ec;
+  --surface: #ffffff;
+  --surface-alt: #ebe6da;
+  --ink: #181614;
+  --ink-muted: #524d45;
+  --line: #d5cebe;
+  --primary: #243a48;
+  --on-primary: #ffffff;
+  --accent: #ab3830;
+  --link: #243a48;
+  --danger: #b32626;
+  --success: #1b6d3d;
+  --warning: #875500;
   color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141311;
+    --surface: #1d1b18;
+    --surface-alt: #272421;
+    --ink: #f2eee6;
+    --ink-muted: #b0a799;
+    --line: #3b3630;
+    --primary: #5c92b0;
+    --on-primary: #0a171f;
+    --accent: #e0584e;
+    --link: #7fb0cc;
+    --danger: #ff7575;
+    --success: #50d688;
+    --warning: #f5b542;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141311; --surface: #1d1b18; --surface-alt: #272421; --ink: #f2eee6; --ink-muted: #b0a799;
+  --line: #3b3630; --primary: #5c92b0; --on-primary: #0a171f; --accent: #e0584e; --link: #7fb0cc;
+  --danger: #ff7575; --success: #50d688; --warning: #f5b542; color-scheme: dark;
 }

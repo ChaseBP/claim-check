@@ -21,6 +21,11 @@ export const TRUSTED_CREATORS = {
 export const HISTORY_DAYS = 730
 export const CHECK_LEASE_DAYS = 14
 
+export const INSURER_SHORT = {
+  "hdfc-ergo": "HDFC ERGO",
+  "tata-aig": "Tata AIG",
+}
+
 export const INSURERS = {
   "hdfc-ergo": "HDFC ERGO General Insurance",
   "tata-aig": "Tata AIG General Insurance",

@@ -1,5 +1,5 @@
-/* Claim Check. Type: Space Grotesk + DM Sans, DM Mono for data,
-   Hind for Devanagari. Colour roles come from one of the owner's wallpapers;
+/* Claim Check. Type: Gloock headlines over Zen Kaku Gothic New,
+   IBM Plex Mono for hashes and PINs, Hind for Devanagari. Colour roles come from one of the owner's wallpapers;
    their values live in src/theme.css. */
 @import "./theme.css";
 
@@ -10,9 +10,9 @@
   --gap: 12px;
   --gap-lg: 24px;
   --ease: cubic-bezier(0.2, 0, 0, 1);
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: "Gloock", Georgia, "Times New Roman", serif;
+  --font-body: "Zen Kaku Gothic New", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-deva: "Hind", "Noto Sans Devanagari", sans-serif;
 }
 
@@ -25,7 +25,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 html[lang="hi"] body { font-family: var(--font-body), var(--font-deva); }
-html[lang="hi"] h1, html[lang="hi"] h2, html[lang="hi"] h3 { font-family: var(--font-display), var(--font-deva); }
+html[lang="hi"] h1, html[lang="hi"] h2, html[lang="hi"] h3 { font-family: var(--font-display), var(--font-deva); font-weight: 600; }
 a { color: var(--link); text-underline-offset: 3px; text-decoration-thickness: 1px; }
 code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
@@ -42,9 +42,10 @@ code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
 .top { position: sticky; top: 0; z-index: 3; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .top-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); flex-wrap: wrap; min-height: 64px; padding-top: 8px; padding-bottom: 8px; }
 .brand { display: flex; gap: 10px; align-items: center; text-decoration: none; color: var(--ink); }
-.brand strong { font: 700 1.12rem/1 var(--font-display); letter-spacing: -0.01em; }
+.brand strong { font: 400 1.22rem/1 var(--font-display); letter-spacing: 0; }
 .brand small { display: block; color: var(--ink-muted); font: 400 0.72rem/1.2 var(--font-mono); letter-spacing: 0.02em; margin-top: 3px; }
-.logo { width: 34px; height: 34px; border-radius: var(--radius-sm); display: grid; place-items: center; background: var(--primary); color: var(--on-primary); font-size: 20px; }
+/* The mark is a vermilion seal, like the chop in the wallpaper the palette comes from. */
+.logo { width: 34px; height: 34px; border-radius: 7px; display: grid; place-items: center; background: var(--accent); color: #fff; font-size: 20px; box-shadow: inset 0 0 0 2px color-mix(in srgb, #fff 22%, transparent); transform: rotate(-4deg); }
 .tabs { display: flex; gap: 2px; flex-wrap: wrap; }
 .tabs a {
   display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
@@ -62,15 +63,15 @@ code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
 main { padding-top: 8px; padding-bottom: 56px; }
 .eyebrow { font: 500 0.76rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); margin: 36px 0 12px; display: flex; gap: 8px; align-items: center; }
 .eyebrow::before { content: ""; width: 8px; height: 8px; background: var(--accent); border-radius: 2px; }
-h1 { font: 700 clamp(1.9rem, 4.6vw, 3rem)/1.08 var(--font-display); letter-spacing: -0.025em; margin: 0 0 12px; max-width: 20ch; }
-h2 { font: 600 1.2rem/1.3 var(--font-display); letter-spacing: -0.01em; margin: 28px 0 12px; }
+h1 { font: 400 clamp(2rem, 5vw, 3.3rem)/1.06 var(--font-display); letter-spacing: -0.005em; margin: 0 0 14px; max-width: 20ch; }
+h2 { font: 400 1.35rem/1.25 var(--font-display); letter-spacing: 0; margin: 28px 0 12px; }
 .lede { color: var(--ink-muted); max-width: 62ch; margin: 0; font-size: 1.04rem; }
 
 /* Facts strip */
 .facts { display: flex; flex-wrap: wrap; margin: 22px 0 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .facts div { padding: 12px 20px 12px 0; margin-right: 20px; border-right: 1px solid var(--line); }
 .facts div:last-child { border-right: 0; }
-.facts b { display: block; font: 600 1.3rem/1.15 var(--font-display); }
+.facts b { display: block; font: 400 1.5rem/1.15 var(--font-display); }
 .facts span { font: 400 0.74rem/1.3 var(--font-mono); color: var(--ink-muted); letter-spacing: 0.02em; }
 
 /* Banners */
@@ -102,7 +103,7 @@ button:active { transform: translateY(1px); }
 /* Result cards */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 18px 20px; margin: 14px 0; animation: rise 260ms var(--ease) both; }
 .card-head { display: flex; justify-content: space-between; gap: var(--gap); align-items: flex-start; flex-wrap: wrap; }
-.card h3 { margin: 0; font: 600 1.12rem/1.3 var(--font-display); letter-spacing: -0.01em; }
+.card h3 { margin: 0; font: 400 1.25rem/1.25 var(--font-display); letter-spacing: 0; }
 .card-head p { margin: 4px 0 0; font: 400 0.82rem/1.4 var(--font-mono); }
 .ins-list { display: grid; gap: 10px; margin-top: 14px; }
 .ins { background: var(--surface-alt); border-radius: var(--radius); padding: 12px 14px 12px 16px; border-left: 3px solid var(--line); }
@@ -110,7 +111,7 @@ button:active { transform: translateY(1px); }
 .ins.st-removed { border-left-color: var(--success); }
 .ins.absent { background: transparent; border: 1px dashed var(--line); border-left: 3px dashed var(--line); }
 .ins-head { display: flex; justify-content: space-between; align-items: center; gap: var(--gap); flex-wrap: wrap; }
-.ins h4 { margin: 0; font: 600 0.95rem/1.3 var(--font-body); }
+.ins h4 { margin: 0; font: 700 0.95rem/1.3 var(--font-body); }
 .ins p { margin: 6px 0 2px; font-size: 0.93rem; }
 .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 3px 10px; font: 600 0.78rem/1.5 var(--font-body); white-space: nowrap; border: 1px solid currentColor; }
 .pill.bad { color: var(--danger); background: color-mix(in srgb, var(--danger) 9%, var(--surface)); }
@@ -145,7 +146,8 @@ ul.plain li:last-child { border-bottom: 0; }
 
 /* Sources */
 .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); margin-top: 22px; }
-table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+table { border-collapse: collapse; width: 100%; min-width: 860px; font-size: 0.88rem; }
+td.nowrap { white-space: nowrap; }
 th { color: var(--ink-muted); font: 500 0.72rem/1.2 var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; background: var(--surface-alt); }
 th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
 tr:last-child td { border-bottom: 0; }
@@ -163,6 +165,10 @@ td.mono { word-break: break-all; min-width: 170px; }
 .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 9; display: flex; gap: 8px; align-items: center; max-width: calc(100% - 32px); background: var(--ink); color: var(--bg); border-radius: var(--radius); padding: 10px 16px; font: 500 0.9rem/1.4 var(--font-body); animation: toast-in 260ms var(--ease) both; }
 .toast.out { opacity: 0; transition: opacity 300ms var(--ease); }
 
+@media (max-width: 560px) {
+  .alert { font-size: 0.84rem; padding: 8px 12px; }
+  h1 { font-size: 2rem; }
+}
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translateX(-50%); } }
 @keyframes spin { to { transform: rotate(360deg); } }
