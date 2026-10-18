@@ -82,8 +82,8 @@ Run the app locally: `bun install && bun run dev`. Publishing needs a funded key
 
 We republish what insurers published and do not judge whether an exclusion is justified. Not being on a list does not guarantee payment; confirm with the insurer before admission. Matching hospitals across versions and insurers uses name and PIN, with a rule for truncated names; a renamed hospital at the same PIN appears as a new entry. Tata AIG lists carry no effective date, so for them we show the first monthly list a hospital appears on. Two insurers are covered so far. Records live on a testnet and are retained for about two years unless extended.
 
-## Built during the challenge
+## Stack and data
 
-All code and data were created on 18 October 2026 for the Arkiv Global Tour Stop; there is no pre-existing work, and the baseline is this repository's first commit. Libraries: `@arkiv-network/sdk` 0.8.1, viem 2.38.2, Vite 6, pdfplumber 0.11.4. Runtime: Bun 1.2.
+Libraries: `@arkiv-network/sdk` 0.8.1, viem 2.38.2, Vite 6, pdfplumber 0.11.4. Runtime: Bun 1.2.
 
 Data: exclusion lists published by HDFC ERGO General Insurance and Tata AIG General Insurance, plus Internet Archive captures of earlier HDFC ERGO versions. Not insurance advice.
